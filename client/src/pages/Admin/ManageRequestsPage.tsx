@@ -1,0 +1,217 @@
+import { useEffect, useState } from "react";
+
+import {
+  getAllRequests,
+  deleteRequest,
+} from "../../services/adminService";
+import RequestDetailsModal from "../../components/Modals/RequestDetailsModal";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
+
+interface Request {
+  _id: string;
+
+  patientName: string;
+  bloodGroup: string;
+  unitsRequired: number;
+
+  hospitalName: string;
+  hospitalCity: string;
+  hospitalAddress: string;
+
+  contactNumber: string;
+
+  urgency: string;
+  status: string;
+
+  requiredBefore: string;
+
+  requester?: {
+    bloodBridgeId: string;
+    name: string;
+  };
+}
+
+function ManageRequestsPage() {
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const loadRequests = async () => {
+    try {
+      const res = await getAllRequests();
+      setRequests(res.requests);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+
+  const result = await Swal.fire({
+    title: "Delete Request?",
+    text: "This blood request will be permanently deleted.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    focusCancel: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+
+    await deleteRequest(id);
+
+    toast.success("Request deleted successfully.");
+
+    loadRequests();
+
+  } catch (err: any) {
+
+    toast.error(
+      err.response?.data?.message ||
+      "Failed to delete request."
+    );
+
+  }
+
+};
+
+  if (loading) {
+    return (
+      <div className="text-center py-20 text-xl">
+        Loading requests...
+      </div>
+    );
+  }
+
+  return (
+    <div>
+
+      <h1 className="text-4xl font-bold mb-8">
+        Manage Blood Requests
+      </h1>
+
+      <div className="bg-white rounded-2xl shadow overflow-x-auto">
+
+        <table className="w-full">
+
+          <thead className="bg-red-600 text-white">
+
+            <tr>
+
+              <th className="p-4 text-left">
+                Requester
+              </th>
+
+              <th className="p-4 text-left">
+                Blood Group
+              </th>
+
+              <th className="p-4 text-left">
+                Hospital
+              </th>
+
+              <th className="p-4 text-left">
+                City
+              </th>
+
+              <th className="p-4 text-left">
+                Urgency
+              </th>
+
+              <th className="p-4 text-left">
+                Status
+              </th>
+
+              <th className="p-4 text-center">
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {requests.map((request) => (
+
+              <tr
+                key={request._id}
+                className="border-b hover:bg-gray-50"
+              >
+
+                <td className="p-4">
+                  {request.requester?.name}
+                </td>
+
+                <td className="p-4">
+                  {request.bloodGroup}
+                </td>
+
+                <td className="p-4">
+                  {request.hospitalName}
+                </td>
+
+                <td className="p-4">
+                  {request.hospitalCity}
+                </td>
+
+                <td className="p-4">
+                  {request.urgency}
+                </td>
+
+                <td className="p-4">
+                  {request.status}
+                </td>
+
+                <td className="p-4 text-center space-x-2">
+
+                  <button
+                    onClick={() => setSelectedRequest(request)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  >
+                    View
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(request._id)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                  >
+                    Delete
+                  </button>
+
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+       </div>
+
+      <RequestDetailsModal
+        request={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        onUpdated={loadRequests}
+      />
+
+    </div>
+  );
+}
+
+export default ManageRequestsPage;
