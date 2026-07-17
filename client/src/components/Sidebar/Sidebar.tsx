@@ -8,12 +8,20 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { NavLink, useNavigate } from "react-router-dom";
+import {
+  NavLink,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
 
 function Sidebar() {
   const { logout, user } = useAuth();
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -25,9 +33,9 @@ function Sidebar() {
       ? "/admin/dashboard"
       : "/dashboard";
 
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
+  const linkClass = (active: boolean) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium ${
-      isActive
+      active
         ? "bg-red-600 text-white"
         : "text-gray-700 hover:bg-red-50 hover:text-red-600"
     }`;
@@ -37,6 +45,7 @@ function Sidebar() {
 
       {/* Logo */}
       <div className="p-6 border-b">
+
         <h1 className="text-3xl font-bold text-red-600">
           AK BloodBridge
         </h1>
@@ -48,6 +57,7 @@ function Sidebar() {
         <p className="text-xs text-red-500 mt-1 capitalize">
           {user?.role}
         </p>
+
       </div>
 
       {/* Navigation */}
@@ -55,34 +65,47 @@ function Sidebar() {
 
         <NavLink
           to={dashboardPath}
-          className={linkClass}
+          end
+          className={({ isActive }) => linkClass(isActive)}
         >
           <LayoutDashboard size={20} />
           Dashboard
         </NavLink>
 
-        {/* User Menu */}
         {user?.role === "user" && (
           <>
+
             <NavLink
               to="/donors"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <Users size={20} />
               Find Donors
             </NavLink>
 
-            <NavLink
+            {/* Blood Requests */}
+            <Link
               to="/requests"
-              className={linkClass}
+              className={linkClass(location.pathname === "/requests")}
             >
               <Droplets size={20} />
               Blood Requests
-            </NavLink>
+            </Link>
+
+            {/* Create Request */}
+            <Link
+              to="/requests/create"
+              className={linkClass(location.pathname === "/requests/create")}
+            >
+              <ClipboardList size={20} />
+              Create Request
+            </Link>
 
             <NavLink
               to="/my-requests"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <ClipboardList size={20} />
               My Requests
@@ -90,7 +113,8 @@ function Sidebar() {
 
             <NavLink
               to="/donations"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <HeartHandshake size={20} />
               My Donations
@@ -98,20 +122,23 @@ function Sidebar() {
 
             <NavLink
               to="/profile"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <User size={20} />
               Profile
             </NavLink>
+
           </>
         )}
 
-        {/* Admin Menu */}
         {user?.role === "admin" && (
           <>
+
             <NavLink
               to="/admin/users"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <Users size={20} />
               Manage Users
@@ -119,11 +146,13 @@ function Sidebar() {
 
             <NavLink
               to="/admin/requests"
-              className={linkClass}
+              end
+              className={({ isActive }) => linkClass(isActive)}
             >
               <ClipboardList size={20} />
               Manage Requests
             </NavLink>
+
           </>
         )}
 

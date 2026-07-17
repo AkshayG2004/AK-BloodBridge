@@ -45,7 +45,7 @@ function AppRoutes() {
         <Route
           element={
             <ProtectedRoute>
-              <MainLayout />
+                <MainLayout />
             </ProtectedRoute>
           }
         >

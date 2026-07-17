@@ -4,21 +4,13 @@ import {
   Phone,
   Droplets,
   Hospital,
+  User,
+  FileText,
+  Package,
 } from "lucide-react";
 
 import UrgencyBadge from "./UrgencyBadge";
-
-interface BloodRequest {
-  _id: string;
-  patientName: string;
-  bloodGroup: string;
-  unitsRequired: number;
-  hospitalName: string;
-  hospitalAddress: string;
-  urgency: "Low" | "Medium" | "High" | "Critical";
-  requiredBefore: string;
-  contactNumber?: string;
-}
+import type { BloodRequest } from "../../types/bloodRequest";
 
 interface Props {
   request: BloodRequest;
@@ -30,78 +22,173 @@ function BloodRequestCard({
   onAccept,
 }: Props) {
   return (
-    <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 flex flex-col h-full">
+    <div className="bg-white rounded-2xl shadow hover:shadow-lg transition-all duration-200 border border-gray-100 p-7 flex flex-col h-full">
 
       {/* Header */}
       <div className="flex justify-between items-start">
 
         <div>
+          <p className="text-xs uppercase tracking-wide text-gray-500">
+            Patient
+          </p>
 
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-2xl font-bold mt-1">
             {request.patientName}
           </h2>
 
-          <div className="flex items-center gap-2 mt-2 text-red-600 font-semibold">
-            <Droplets size={18} />
-            {request.bloodGroup}
-          </div>
+          <div className="flex gap-8 mt-5">
 
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500">
+                Blood Group
+              </p>
+
+              <div className="flex items-center gap-2 mt-1 text-red-600 font-semibold">
+                <Droplets size={18} />
+                {request.bloodGroup}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500">
+                Units
+              </p>
+
+              <div className="flex items-center gap-2 mt-1 font-semibold">
+                <Package size={18} />
+                {request.unitsRequired}
+              </div>
+            </div>
+
+          </div>
         </div>
 
         <UrgencyBadge urgency={request.urgency} />
 
       </div>
 
+      {/* Divider */}
+      <div className="border-t my-6" />
+
       {/* Details */}
-      <div className="mt-8 space-y-4 text-gray-600 flex-1">
+      <div className="space-y-5 flex-1">
 
-        <div className="flex items-center gap-3">
-          <Hospital size={18} />
-          <span>{request.hospitalName}</span>
+        <div className="flex items-start gap-3">
+          <Hospital size={18} className="text-gray-500 mt-0.5" />
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Hospital
+            </p>
+
+            <p className="font-medium">
+              {request.hospitalName}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <MapPin size={18} />
-          <span>{request.hospitalAddress}</span>
+        <div className="flex items-start gap-3">
+          <MapPin size={18} className="text-gray-500 mt-0.5" />
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Location
+            </p>
+
+            <p className="font-medium">
+              {request.hospitalCity}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {request.hospitalAddress}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <CalendarDays size={18} />
-          <span>
-            Needed Before{" "}
-            <strong>
-              {new Date(request.requiredBefore).toLocaleDateString()}
-            </strong>
-          </span>
+        <div className="flex items-start gap-3">
+          <User size={18} className="text-gray-500 mt-0.5" />
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Contact Person
+            </p>
+
+            <p className="font-medium">
+              {request.contactPerson}
+            </p>
+          </div>
         </div>
 
-        {request.contactNumber && (
-          <div className="flex items-center gap-3">
-            <Phone size={18} />
-            <span>{request.contactNumber}</span>
+        <div className="flex items-start gap-3">
+          <Phone size={18} className="text-gray-500 mt-0.5" />
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Contact Number
+            </p>
+
+            <p className="font-medium">
+              {request.contactNumber}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <CalendarDays size={18} className="text-gray-500 mt-0.5" />
+
+          <div>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Required Before
+            </p>
+
+            <p className="font-medium">
+              {new Date(request.requiredBefore).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {request.notes?.trim() && (
+          <div className="flex items-start gap-3">
+            <FileText size={18} className="text-gray-500 mt-0.5" />
+
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500">
+                Notes
+              </p>
+
+              <p className="text-sm text-gray-700">
+                {request.notes}
+              </p>
+            </div>
           </div>
         )}
 
       </div>
 
       {/* Footer */}
-      <div className="mt-auto border-t pt-5 flex justify-between items-center">
 
-        <div>
+      <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between">
 
-          <p className="text-gray-500 text-sm">
-            Units Required
+        <div className="text-sm">
+
+          <p className="font-medium text-gray-800">
+            Requested by{" "}
+            <span className="text-red-600">
+              {request.requester?.bloodBridgeId}
+            </span>
           </p>
 
-          <h3 className="text-3xl font-bold">
-            {request.unitsRequired}
-          </h3>
+          <p className="text-gray-500 mt-1">
+            {request.createdAt
+              ? new Date(request.createdAt).toLocaleString()
+              : ""}
+          </p>
 
         </div>
 
         <button
           onClick={() => onAccept(request._id)}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+          className="h-11 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition"
         >
           Accept Request
         </button>

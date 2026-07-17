@@ -12,11 +12,14 @@ export interface IBloodRequest extends Document {
   hospitalCity: string;
   hospitalAddress: string;
 
+  contactPerson: string;
   contactNumber: string;
 
   urgency: "Low" | "Medium" | "High" | "Critical";
 
   requiredBefore: Date;
+  
+  notes?: string;
 
   status: "Open" | "Accepted" | "Completed" | "Cancelled";
 }
@@ -43,8 +46,17 @@ const bloodRequestSchema = new Schema<IBloodRequest>(
 
     bloodGroup: {
       type: String,
+      enum: [
+        "A+",
+        "A-",
+        "B+",
+        "B-",
+        "AB+",
+        "AB-",
+        "O+",
+        "O-",
+      ],
       required: true,
-      trim: true,
     },
 
     unitsRequired: {
@@ -71,6 +83,12 @@ const bloodRequestSchema = new Schema<IBloodRequest>(
       trim: true,
     },
 
+    contactPerson: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     contactNumber: {
       type: String,
       required: true,
@@ -86,6 +104,12 @@ const bloodRequestSchema = new Schema<IBloodRequest>(
     requiredBefore: {
       type: Date,
       required: true,
+    },
+
+    notes: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     status: {

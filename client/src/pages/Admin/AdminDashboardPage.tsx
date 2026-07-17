@@ -5,6 +5,7 @@ import {
   HeartHandshake,
   UserCheck,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -18,9 +19,17 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  LabelList,
 } from "recharts";
 
 import { getDashboardStats } from "../../services/adminService";
+
+const STATUS_COLORS = {
+  Open: "#ef4444",
+  Accepted: "#f59e0b",
+  Completed: "#22c55e",
+  Cancelled: "#6b7280",
+};
 
 interface DashboardStats {
   totalUsers: number;
@@ -28,52 +37,91 @@ interface DashboardStats {
   totalDonations: number;
   availableDonors: number;
   criticalRequests: number;
+
+  openRequests: number;
+  acceptedRequests: number;
+  completedRequests: number;
+  cancelledRequests: number;
+
+  bloodGroupStats: {
+    _id: string;
+    count: number;
+  }[];
+
+  cityStats: {
+    _id: string;
+    count: number;
+  }[];
+
+  criticalRequestList: {
+    patientName: string;
+    bloodGroup: string;
+    hospitalCity: string;
+    requiredBefore: string;
+  }[];
 }
-
-const bloodData = [
-  { group: "A+", donors: 18 },
-  { group: "A-", donors: 5 },
-  { group: "B+", donors: 14 },
-  { group: "B-", donors: 4 },
-  { group: "AB+", donors: 6 },
-  { group: "AB-", donors: 2 },
-  { group: "O+", donors: 24 },
-  { group: "O-", donors: 3 },
-];
-
-const requestData = [
-  { name: "Pending", value: 12 },
-  { name: "Approved", value: 8 },
-  { name: "Completed", value: 23 },
-];
-
-const colors = ["#dc2626", "#2563eb", "#16a34a"];
 
 function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalRequests: 0,
-    totalDonations: 0,
-    availableDonors: 0,
-    criticalRequests: 0,
-  });
+  totalUsers: 0,
+  totalRequests: 0,
+  totalDonations: 0,
+  availableDonors: 0,
+  criticalRequests: 0,
+
+  openRequests: 0,
+  acceptedRequests: 0,
+  completedRequests: 0,
+  cancelledRequests: 0,
+
+  bloodGroupStats: [],
+  cityStats: [],
+  criticalRequestList: [],
+});
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   useEffect(() => {
     loadDashboard();
   }, []);
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (isRefresh = false) => {
     try {
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
       const res = await getDashboardStats();
+
       setStats(res.stats);
+      setLastUpdated(new Date());
+
     } catch (err) {
+
       console.error(err);
+
     } finally {
+
       setLoading(false);
+      setRefreshing(false);
+
     }
   };
+
+  const bloodData = stats.bloodGroupStats.map((item) => ({
+    group: item._id,
+    donors: item.count,
+  }));
+
+  const cityData = stats.cityStats.map((city) => ({
+    city: city._id,
+    users: city.count,
+  }));
 
   if (loading) {
     return (
@@ -83,18 +131,70 @@ function AdminDashboardPage() {
     );
   }
 
+    const requestData = [
+      {
+        name: "Open",
+        value: stats.openRequests,
+      },
+      {
+        name: "Accepted",
+        value: stats.acceptedRequests,
+      },
+      {
+        name: "Completed",
+        value: stats.completedRequests,
+      },
+      {
+        name: "Cancelled",
+        value: stats.cancelledRequests,
+      },
+    ].filter(item => item.value > 0);
+
   return (
     <div className="space-y-8">
 
-      <div>
+      <div className="flex items-center justify-between">
 
-        <h1 className="text-3xl font-bold">
-          Admin Dashboard
-        </h1>
+        <div>
 
-        <p className="text-gray-500 mt-1">
-          Monitor users, blood requests and donations.
-        </p>
+          <h1 className="text-3xl font-bold">
+            Admin Dashboard
+          </h1>
+
+          <p className="text-gray-500 mt-1">
+            Monitor users, blood requests and donations.
+          </p>
+
+          <p className="text-xs text-gray-400 mt-2">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </p>
+
+        </div>
+
+        <button
+          onClick={() => loadDashboard(true)}
+          disabled={refreshing}
+          className="
+            flex items-center gap-2
+            bg-red-600
+            text-white
+            px-5
+            py-2.5
+            rounded-xl
+            hover:bg-red-700
+            disabled:opacity-60
+            transition
+          "
+        >
+
+          <RefreshCw
+            size={18}
+            className={refreshing ? "animate-spin" : ""}
+          />
+
+          {refreshing ? "Refreshing..." : "Refresh"}
+
+        </button>
 
       </div>
 
@@ -150,12 +250,59 @@ function AdminDashboardPage() {
           </h2>
 
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={bloodData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="group" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="donors" fill="#dc2626" radius={[6,6,0,0]} />
+            <BarChart
+              data={bloodData}
+              margin={{
+                top: 10,
+                right: 20,
+                left: 0,
+                bottom: 0,
+              }}
+              barCategoryGap={40}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#f1f5f9"
+              />
+
+              <XAxis
+                dataKey="group"
+                tick={{ fontSize: 13 }}
+                axisLine={false}
+                tickLine={false}
+              />
+
+              <YAxis
+                allowDecimals={false}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 13 }}
+                domain={[0, "dataMax + 1"]}
+              />
+
+              <Tooltip
+                cursor={false}
+                labelFormatter={(label) => `Blood Group: ${label}`}
+                formatter={(value) => [`${Number(value)}`, "Donors"]}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                }}
+              />
+
+              <Bar
+                dataKey="donors"
+                fill="#dc2626"
+                radius={[8, 8, 0, 0]}
+                barSize={bloodData.length <= 2 ? 30 : 40}
+              >
+                <LabelList
+                    dataKey="donors"
+                    position="top"
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
 
@@ -173,21 +320,55 @@ function AdminDashboardPage() {
               <Pie
                 data={requestData}
                 dataKey="value"
-                outerRadius={110}
-                label
+                outerRadius={105}
+                innerRadius={55}
+                paddingAngle={0}
               >
-                {requestData.map((_, index) => (
+                {requestData.map((entry) => (
                   <Cell
-                    key={index}
-                    fill={colors[index]}
+                    key={entry.name}
+                    fill={STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS]}
                   />
                 ))}
               </Pie>
 
               <Tooltip />
-
             </PieChart>
           </ResponsiveContainer>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+
+            {requestData.map((item) => (
+
+              <div
+                key={item.name}
+                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
+              >
+
+                <div className="flex items-center gap-3">
+
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{
+                      backgroundColor:
+                        STATUS_COLORS[item.name as keyof typeof STATUS_COLORS],
+                    }}
+                  />
+
+                  <span className="text-sm font-medium">
+                    {item.name}
+                  </span>
+
+                </div>
+
+                <span className="font-bold text-gray-900">
+                  {item.value}
+                </span>
+
+              </div>
+
+            ))}
+
+          </div>
 
         </div>
 
@@ -199,79 +380,203 @@ function AdminDashboardPage() {
 
         <div className="bg-white rounded-2xl shadow">
 
-          <div className="px-6 py-4 border-b">
+        <div className="px-6 py-4 border-b">
 
-            <h2 className="font-semibold">
-              Recent Users
-            </h2>
-
-          </div>
-
-          <table className="w-full">
-
-            <tbody>
-
-              <tr className="border-b">
-                <td className="p-4">BB00041</td>
-                <td>Arun Kumar</td>
-                <td>O+</td>
-              </tr>
-
-              <tr className="border-b">
-                <td className="p-4">BB00042</td>
-                <td>Priya</td>
-                <td>A+</td>
-              </tr>
-
-              <tr>
-                <td className="p-4">BB00043</td>
-                <td>Rahul</td>
-                <td>B+</td>
-              </tr>
-
-            </tbody>
-
-          </table>
+          <h2 className="font-semibold">
+            Critical Blood Requests
+          </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow">
+        <table className="w-full">
 
-          <div className="px-6 py-4 border-b">
+          <thead className="text-left bg-gray-50">
 
-            <h2 className="font-semibold">
-              Recent Requests
-            </h2>
+            <tr>
 
-          </div>
+              <th className="p-4">Patient</th>
 
-          <table className="w-full">
+              <th className="p-4">Blood</th>
 
-            <tbody>
+              <th className="p-4">City</th>
 
-              <tr className="border-b">
-                <td className="p-4">O+</td>
-                <td>Chennai</td>
-                <td className="text-red-600">Pending</td>
-              </tr>
+              <th className="p-4"> Deadline </th>
 
-              <tr className="border-b">
-                <td className="p-4">A-</td>
-                <td>Madurai</td>
-                <td className="text-blue-600">Approved</td>
-              </tr>
+              <th className="p-4"> Status </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {stats.criticalRequestList.length === 0 ? (
 
               <tr>
-                <td className="p-4">B+</td>
-                <td>Salem</td>
-                <td className="text-green-600">Completed</td>
+                <td
+                  colSpan={5}
+                  className="text-center py-8 text-gray-500"
+                >
+                  No critical requests.
+                </td>
               </tr>
 
-            </tbody>
+            ) : (
 
-          </table>
+              stats.criticalRequestList.map((request, index) => {
 
-        </div>
+                const deadline = new Date(request.requiredBefore);
+
+                const today = new Date();
+
+                deadline.setHours(0,0,0,0);
+                today.setHours(0,0,0,0);
+
+                const daysLeft = Math.ceil(
+                  (deadline.getTime() - today.getTime()) /
+                  (1000 * 60 * 60 * 24)
+                );
+
+                return (
+
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+
+                    <td className="p-4 font-medium">
+                      {request.patientName}
+                    </td>
+
+                    <td className="p-4">
+
+                      <span className="bg-red-100 text-red-600 font-semibold px-3 py-1 rounded-full text-sm">
+
+                        {request.bloodGroup}
+
+                      </span>
+
+                    </td>
+
+                    <td className="p-4">
+                      {request.hospitalCity}
+                    </td>
+
+                    <td className="p-4">
+
+                      {deadline.toLocaleDateString()}
+
+                    </td>
+
+                    <td className="p-4">
+
+                      {daysLeft < 0 ? (
+
+                        <span className="text-red-600 font-semibold">
+                          Overdue
+                        </span>
+
+                      ) : daysLeft === 0 ? (
+
+                        <span className="text-red-600 font-semibold">
+                          Today
+                        </span>
+
+                      ) : daysLeft === 1 ? (
+
+                        <span className="text-yellow-600 font-semibold">
+                          Tomorrow
+                        </span>
+
+                      ) : (
+
+                        <span className="text-green-600 font-semibold">
+                          {daysLeft} Days
+                        </span>
+
+                      )}
+
+                    </td>
+
+                  </tr>
+
+                );
+
+              })
+
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+        <div className="bg-white rounded-2xl shadow p-6">
+
+        <h2 className="font-semibold text-lg mb-5">
+          Top Cities by Registered Users
+        </h2>
+
+        <ResponsiveContainer
+          width="100%"
+          height={320}
+        >
+
+          <BarChart
+            data={cityData}
+            layout="vertical"
+            margin={{
+              top: 10,
+              right: 35,
+              left: 10,
+              bottom: 10,
+            }}
+          >
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+              horizontal={false}
+            />
+
+            <XAxis
+              type="number"
+              allowDecimals={false}
+            />
+
+            <YAxis
+              type="category"
+              dataKey="city"
+              width={80}
+            />
+
+            <Tooltip
+              cursor={false}
+              formatter={(value) => [
+                Number(value),
+                "Users",
+              ]}
+            />
+
+            <Bar
+              dataKey="users"
+              fill="#dc2626"
+              radius={[0, 8, 8, 0]}
+              maxBarSize={28}
+            >
+
+              <LabelList
+                dataKey="users"
+                position="right"
+              />
+
+            </Bar>
+
+          </BarChart>
+
+        </ResponsiveContainer>
+
+      </div>
 
       </div>
 

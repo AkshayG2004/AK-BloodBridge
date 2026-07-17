@@ -17,11 +17,12 @@ export const createBloodRequest = async (
         unitsRequired,
         hospitalName,
         hospitalCity,
-        city,
         hospitalAddress,
+        contactPerson,
         contactNumber,
         urgency,
         requiredBefore,
+        notes,
     } = req.body;
 
     const bloodRequest = await BloodRequest.create({
@@ -32,9 +33,11 @@ export const createBloodRequest = async (
       hospitalName,
       hospitalCity,
       hospitalAddress,
+      contactPerson,
       contactNumber,
       urgency,
       requiredBefore,
+      notes,
     });
 
     res.status(201).json({
@@ -64,6 +67,7 @@ export const getBloodRequests = async (
   try {
     const requests = await BloodRequest.find({
       status: "Open",
+      requiredBefore: { $gte: new Date() },
     })
       .populate("requester", "bloodBridgeId name phone city")
       .sort({ createdAt: -1 });
@@ -103,6 +107,13 @@ export const acceptBloodRequest = async (
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (donor.availabilityStatus !== "Available") {
+      return res.status(400).json({
+        success: false,
+        message: `You are currently ${donor.availabilityStatus.toLowerCase()} and cannot accept blood requests.`,
       });
     }
 
@@ -213,10 +224,14 @@ export const completeBloodDonation = async (
 
       donor.lastDonationDate = today;
 
+      // 90-days eligibility gap
       const nextEligible = new Date(today);
-      nextEligible.setDate(today.getDate() + 90);
+      nextEligible.setDate(nextEligible.getDate() + 90);
 
       donor.nextEligibleDonationDate = nextEligible;
+
+      // Automatically make donor unavailable
+      donor.availabilityStatus = "Unavailable";
 
       await donor.save();
     }

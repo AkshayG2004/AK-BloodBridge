@@ -24,6 +24,13 @@ router.get(
   getDashboardStats
 );
 
+// Dashboard overview
+router.get(
+  "/dashboard/overview",
+  authMiddleware,
+  adminMiddleware,
+);
+
 // Get all users
 router.get(
   "/users",

@@ -166,6 +166,15 @@ export const updateProfile = async (
     if (availabilityStatus !== undefined)
       user.availabilityStatus = availabilityStatus;
 
+    // Update profile completion status
+    user.isProfileComplete =
+      !!user.bloodGroup &&
+      !!user.phone &&
+      !!user.gender &&
+      !!user.dateOfBirth &&
+      !!user.weight &&
+      !!user.city;
+
     await user.save();
 
     const updatedUser = await User.findById(req.userId).select("-password");

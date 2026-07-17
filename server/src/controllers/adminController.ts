@@ -166,6 +166,22 @@ export const getDashboardStats = async (
 
     const totalRequests = await BloodRequest.countDocuments();
 
+    const openRequests = await BloodRequest.countDocuments({
+      status: "Open",
+    });
+
+    const acceptedRequests = await BloodRequest.countDocuments({
+      status: "Accepted",
+    });
+
+    const completedRequests = await BloodRequest.countDocuments({
+      status: "Completed",
+    });
+
+    const cancelledRequests = await BloodRequest.countDocuments({
+      status: "Cancelled",
+    });
+
     const availableDonors = await User.countDocuments({
       role: "user",
       availabilityStatus: "Available",
@@ -175,6 +191,8 @@ export const getDashboardStats = async (
       urgency: "Critical",
       status: "Open",
     });
+
+    
 
     const donations = await User.aggregate([
       {
@@ -187,14 +205,81 @@ export const getDashboardStats = async (
       },
     ]);
 
+    // Blood group distribution
+    const bloodGroupStats = await User.aggregate([
+      {
+        $match: {
+          role: "user",
+          bloodGroup: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: "$bloodGroup",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // City distribution
+    const cityStats = await User.aggregate([
+      {
+        $match: {
+          role: "user",
+          city: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: "$city",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+      {
+        $limit: 5,
+      },
+    ]);
+
+    // Critical Requests List
+    const criticalRequestList = await BloodRequest.find({
+      urgency: "Critical",
+      status: "Open",
+    })
+      .select(
+        "patientName bloodGroup hospitalCity requiredBefore"
+      )
+      .sort({
+        requiredBefore: 1,
+      })
+      .limit(5);
+
     res.status(200).json({
       success: true,
       stats: {
         totalUsers,
         totalRequests,
+
+        openRequests,
+        acceptedRequests,
+        completedRequests,
+        cancelledRequests,
+
         totalDonations: donations[0]?.total || 0,
+
         availableDonors,
         criticalRequests,
+
+        bloodGroupStats,
+        cityStats,
+        criticalRequestList,
       },
     });
   } catch (error) {

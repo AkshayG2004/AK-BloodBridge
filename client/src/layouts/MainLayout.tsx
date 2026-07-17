@@ -17,10 +17,51 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar/Navbar";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { getProfile } from "../services/profileService";
 
 function MainLayout() {
-  const { logout, user } = useAuth();
+  const {
+  logout,
+  user,
+  refreshUser,
+} = useAuth();
+
+  const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+
+  if (!user || user.role === "admin") return;
+
+  const loadProfile = async () => {
+
+    try {
+
+      const res = await getProfile();
+
+      refreshUser(res.user);
+
+      if (
+        !res.user.isProfileComplete &&
+        location.pathname !== "/profile"
+      ) {
+        navigate("/profile", { replace: true });
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
+
+  loadProfile();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const dashboardMenu = [
     {
@@ -88,11 +129,35 @@ function MainLayout() {
   const renderMenu = (menu: typeof dashboardMenu) =>
     menu.map((item) => (
       <NavLink
-        key={item.path}
-        to={item.path}
+      key={item.path}
+      to={item.path}
+      onClick={(e) => {
+        if (
+          user?.role !== "admin" &&
+          !user?.isProfileComplete &&
+          item.path !== "/profile"
+        ) {
+          e.preventDefault();
+        }
+      }}
+        end={
+          item.path === "/requests" ||
+          item.path === "/dashboard" ||
+          item.path === "/admin/dashboard" ||
+          item.path === "/donors" ||
+          item.path === "/profile" ||
+          item.path === "/my-requests" ||
+          item.path === "/donations" ||
+          item.path === "/admin/users" ||
+          item.path === "/admin/requests"
+        }
         className={({ isActive }) =>
           `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-            isActive
+            user?.role !== "admin" &&
+            !user?.isProfileComplete &&
+            item.path !== "/profile"
+              ? "opacity-50 cursor-not-allowed"
+              : isActive
               ? "bg-white text-red-700 font-semibold shadow-md"
               : "hover:bg-red-600"
           }`

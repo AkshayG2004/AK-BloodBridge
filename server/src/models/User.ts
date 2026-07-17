@@ -27,6 +27,8 @@ export interface IUser extends Document {
 
   totalDonations: number;
 
+  isProfileComplete: boolean;
+
   role: "user" | "admin";
 }
 
@@ -93,6 +95,11 @@ const userSchema = new Schema<IUser>(
     totalDonations: {
       type: Number,
       default: 0,
+    },
+
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
     },
 
     role: {
