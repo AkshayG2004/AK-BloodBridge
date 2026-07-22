@@ -68,6 +68,13 @@ export const getBloodRequests = async (
     const requests = await BloodRequest.find({
       status: "Open",
       requiredBefore: { $gte: new Date() },
+      requester: { $ne: req.userId },
+      $expr: {
+        $lt: [
+          { $size: "$acceptedDonors" },
+          "$unitsRequired",
+        ],
+      },
     })
       .populate("requester", "bloodBridgeId name phone city")
       .sort({ createdAt: -1 });
@@ -124,14 +131,6 @@ export const acceptBloodRequest = async (
       });
     }
 
-    // Already accepted?
-    if (request.status !== "Open") {
-      return res.status(400).json({
-        success: false,
-        message: "This request has already been processed",
-      });
-    }
-
     // Prevent requester from accepting own request
     if (request.requester.toString() === req.userId) {
       return res.status(400).json({
@@ -150,14 +149,31 @@ export const acceptBloodRequest = async (
       });
     }
 
-    request.status = "Accepted";
-    request.acceptedBy = req.userId as any;
+    // Donor already accepted this request?
+    if (
+      request.acceptedDonors.some(
+        (d) => d.donor.toString() === req.userId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already accepted this request.",
+      });
+    }
+
+    request.acceptedDonors.push({
+      donor: req.userId as any,
+      status: "Accepted",
+    });
 
     await request.save();
 
     const updatedRequest = await BloodRequest.findById(id)
-      .populate("requester", "bloodBridgeId name phone city")
-      .populate("acceptedBy", "bloodBridgeId name phone city");
+    .populate("requester", "bloodBridgeId name phone city")
+    .populate(
+      "acceptedDonors.donor",
+      "bloodBridgeId name phone city"
+    );
 
     res.status(200).json({
       success: true,
@@ -176,92 +192,6 @@ export const acceptBloodRequest = async (
   }
 };
 
-// ==========================
-// Complete Blood Donation
-// ==========================
-export const completeBloodDonation = async (
-  req: AuthRequest,
-  res: Response
-) => {
-  try {
-    const { id } = req.params;
-
-    const request = await BloodRequest.findById(id);
-
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: "Blood request not found",
-      });
-    }
-
-    if (request.status !== "Accepted") {
-      return res.status(400).json({
-        success: false,
-        message: "Only accepted requests can be completed",
-      });
-    }
-
-    // Only donor who accepted the request can complete it
-    if (request.acceptedBy?.toString() !== req.userId) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not allowed to complete this donation",
-      });
-    }
-
-    // Update request status
-    request.status = "Completed";
-    await request.save();
-
-    // Update donor statistics
-    const donor = await User.findById(req.userId);
-
-    if (donor) {
-      donor.totalDonations += 1;
-
-      const today = new Date();
-
-      donor.lastDonationDate = today;
-
-      // 90-days eligibility gap
-      const nextEligible = new Date(today);
-      nextEligible.setDate(nextEligible.getDate() + 90);
-
-      donor.nextEligibleDonationDate = nextEligible;
-
-      // Automatically make donor unavailable
-      donor.availabilityStatus = "Unavailable";
-
-      await donor.save();
-    }
-
-    // Fetch updated request
-    const updatedRequest = await BloodRequest.findById(id)
-      .populate("requester", "bloodBridgeId name")
-      .populate("acceptedBy", "bloodBridgeId name");
-
-    // Fetch updated donor without password
-    const updatedDonor = await User.findById(req.userId).select("-password");
-
-    res.status(200).json({
-      success: true,
-      message: "Donation completed successfully",
-      request: updatedRequest,
-      donor: updatedDonor,
-    });
-
-  } catch (error) {
-    console.error("========== COMPLETE DONATION ERROR ==========");
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
-
 export const getMyBloodRequests = async (
   req: AuthRequest,
   res: Response
@@ -270,7 +200,10 @@ export const getMyBloodRequests = async (
     const requests = await BloodRequest.find({
       requester: req.userId,
     })
-      .populate("acceptedBy", "bloodBridgeId name phone city")
+      .populate(
+        "acceptedDonors.donor",
+        "bloodBridgeId name phone city"
+      )
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -296,10 +229,14 @@ export const getAcceptedRequests = async (
 ) => {
   try {
     const requests = await BloodRequest.find({
-      acceptedBy: req.userId,
+      "acceptedDonors.donor": req.userId,
     })
-      .populate("requester", "bloodBridgeId name phone city")
-      .sort({ createdAt: -1 });
+    .populate("requester", "bloodBridgeId name phone city")
+    .populate(
+      "acceptedDonors.donor",
+      "bloodBridgeId name phone city"
+    )
+    .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -309,6 +246,178 @@ export const getAcceptedRequests = async (
 
   } catch (error) {
     console.error("========== GET ACCEPTED REQUESTS ERROR ==========");
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// ==========================
+// Confirm Individual Donor
+// ==========================
+export const confirmDonation = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const { requestId, donorId } = req.params;
+
+    const request = await BloodRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    // Only requester can confirm
+    if (request.requester.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    const donorEntry = request.acceptedDonors.find(
+      (d) => d.donor.toString() === donorId
+    );
+
+    if (!donorEntry) {
+      return res.status(404).json({
+        success: false,
+        message: "Donor not found in this request",
+      });
+    }
+
+    // already processed
+    if (donorEntry.status !== "Accepted") {
+      return res.status(400).json({
+        success: false,
+        message: "Already confirmed",
+      });
+    }
+
+    donorEntry.status = "Completed";
+    donorEntry.confirmedAt = new Date();
+
+    // if completed update donor profile
+    {
+      const donor = await User.findById(donorId);
+
+      if (donor) {
+        donor.totalDonations += 1;
+
+        donor.lastDonationDate = new Date();
+
+        const nextDate = new Date();
+        nextDate.setMonth(nextDate.getMonth() + 3);
+
+        donor.nextEligibleDonationDate = nextDate;
+        donor.availabilityStatus = "Unavailable";
+
+        await donor.save();
+      }
+    }
+
+    // if every accepted donor has been processed
+    const completedCount = request.acceptedDonors.filter(
+      (d) => d.status === "Completed"
+    ).length;
+
+    if (completedCount >= request.unitsRequired) {
+      request.status = "Completed";
+    } else {
+      request.status = "Open";
+    }
+
+    await request.save();
+
+    res.json({
+      success: true,
+      message: "Donation status updated",
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// ==========================
+// Reject Individual Donor
+// ==========================
+export const rejectDonation = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const { requestId, donorId } = req.params;
+
+    const request = await BloodRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    // Only requester can reject
+    if (request.requester.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    const donorEntry = request.acceptedDonors.find(
+      (d) => d.donor.toString() === donorId
+    );
+
+    if (!donorEntry) {
+      return res.status(404).json({
+        success: false,
+        message: "Donor not found",
+      });
+    }
+
+    if (donorEntry.status !== "Accepted") {
+      return res.status(400).json({
+        success: false,
+        message: "Donation already processed",
+      });
+    }
+
+    donorEntry.status = "Rejected";
+    donorEntry.confirmedAt = new Date();
+
+    // If every donor has been processed, close the request
+    const completedCount = request.acceptedDonors.filter(
+      (d) => d.status === "Completed"
+    ).length;
+
+    if (completedCount >= request.unitsRequired) {
+      request.status = "Completed";
+    } else {
+      request.status = "Open";
+    }
+
+    await request.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Donation rejected successfully",
+    });
+
+  } catch (error) {
     console.error(error);
 
     res.status(500).json({

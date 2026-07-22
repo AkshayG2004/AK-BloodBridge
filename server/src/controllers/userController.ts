@@ -1,17 +1,28 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User";
+import PendingUser from "../models/PendingUser";
+import { sendOTPEmail } from "../services/emailService";
+
 import generateBloodBridgeId from "../utils/generateBloodBridgeId";
 import generateToken from "../utils/generateToken";
 import { AuthRequest } from "../middleware/authMiddleware";
 
-// ==========================
-// Register User
-// ==========================
-export const registerUser = async (req: Request, res: Response) => {
+export const sendRegistrationOTP = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Already registered?
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -21,15 +32,107 @@ export const registerUser = async (req: Request, res: Response) => {
       });
     }
 
-    const bloodBridgeId = await generateBloodBridgeId();
+    // Generate OTP
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Save / Update pending user
+    await PendingUser.findOneAndUpdate(
+      { email },
+      {
+        name,
+        email,
+        password: hashedPassword,
+        otp,
+        otpExpires: new Date(Date.now() + 5 * 60 * 1000),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    // Send Email
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (error) {
+    console.error("========== SEND OTP ERROR ==========");
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// ==========================
+// Register User
+// ==========================
+export const registerUser = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { email, otp } = req.body;
+
+    const pendingUser = await PendingUser.findOne({ email });
+
+    if (!pendingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Registration request not found",
+      });
+    }
+
+    if (pendingUser.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (pendingUser.otpExpires < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      email: pendingUser.email,
+    });
+
+    if (existingUser) {
+      await PendingUser.deleteOne({
+        email: pendingUser.email,
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered",
+      });
+    }
+
+    const bloodBridgeId = await generateBloodBridgeId();
+
     const user = await User.create({
       bloodBridgeId,
-      name,
-      email,
-      password: hashedPassword,
+      name: pendingUser.name,
+      email: pendingUser.email,
+      password: pendingUser.password,
+    });
+
+    await PendingUser.deleteOne({
+      email: pendingUser.email,
     });
 
     const userResponse = user.toObject();
@@ -37,9 +140,10 @@ export const registerUser = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: "Registration completed successfully",
       user: userResponse,
     });
+
   } catch (error) {
     console.error("========== REGISTER ERROR ==========");
     console.error(error);
@@ -296,14 +400,10 @@ export const getDonors = async (
     const bloodGroup = req.query.bloodGroup?.toString();
 
     const query: any = {
-      _id: { $ne: req.userId },
-      role: "user",
-      availabilityStatus: "Available",
-      $or: [
-        { nextEligibleDonationDate: { $exists: false } },
-        { nextEligibleDonationDate: null },
-        { nextEligibleDonationDate: { $lte: new Date() } },
-      ],
+      _id: { $ne: req.userId },      // Don't show yourself
+      role: "user",                  // Hide admins
+      isProfileComplete: true,       // Only completed profiles
+      availabilityStatus: "Available", // Only available donors
     };
 
     if (bloodGroup) {

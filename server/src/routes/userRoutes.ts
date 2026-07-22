@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  sendRegistrationOTP,
   registerUser,
   loginUser,
   getMyProfile,
@@ -17,7 +18,10 @@ const router = Router();
 // ==========================
 // Public Routes
 // ==========================
+router.post("/send-otp", sendRegistrationOTP);
+
 router.post("/register", registerUser);
+
 router.post("/login", loginUser);
 
 // ==========================

@@ -2,7 +2,17 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IBloodRequest extends Document {
   requester: mongoose.Types.ObjectId;
-  acceptedBy?: mongoose.Types.ObjectId;
+
+  acceptedDonors: {
+    donor: mongoose.Types.ObjectId;
+
+    status:
+      | "Accepted"
+      | "Completed"
+      | "Rejected";
+
+    confirmedAt?: Date;
+  }[];
 
   patientName: string;
   bloodGroup: string;
@@ -18,10 +28,10 @@ export interface IBloodRequest extends Document {
   urgency: "Low" | "Medium" | "High" | "Critical";
 
   requiredBefore: Date;
-  
+
   notes?: string;
 
-  status: "Open" | "Accepted" | "Completed" | "Cancelled";
+  status: "Open" | "Completed" | "Cancelled";
 }
 
 const bloodRequestSchema = new Schema<IBloodRequest>(
@@ -32,11 +42,32 @@ const bloodRequestSchema = new Schema<IBloodRequest>(
       required: true,
     },
 
-    acceptedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+acceptedDonors: [
+  new Schema(
+    {
+      donor: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+
+      status: {
+        type: String,
+        enum: [
+          "Accepted",
+          "Completed",
+          "Rejected",
+        ],
+        default: "Accepted",
+      },
+
+      confirmedAt: {
+        type: Date,
+      },
     },
+    { _id: false }
+  ),
+],
 
     patientName: {
       type: String,
@@ -114,7 +145,11 @@ const bloodRequestSchema = new Schema<IBloodRequest>(
 
     status: {
       type: String,
-      enum: ["Open", "Accepted", "Completed", "Cancelled"],
+      enum: [
+        "Open",
+        "Completed",
+        "Cancelled",
+      ],
       default: "Open",
     },
   },

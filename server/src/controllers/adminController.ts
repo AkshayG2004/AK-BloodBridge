@@ -61,17 +61,35 @@ export const deleteUser = async (
     
     // Don't delete users with completed donation history
     if (user.totalDonations > 0) {
-    return res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: "Cannot delete a donor with completed donation history",
-    });
+      });
     }
 
+    // Delete all blood requests created by this user
+    await BloodRequest.deleteMany({
+      requester: id,
+    });
+
+    // Remove this user from accepted donor lists
+    await BloodRequest.updateMany(
+      {},
+      {
+        $pull: {
+          acceptedDonors: {
+            donor: id,
+          },
+        },
+      }
+    );
+
+    // Finally delete the user
     await User.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
-      message: "User deleted successfully",
+      message: "User and all related data deleted successfully",
     });
 
   } catch (error) {
@@ -95,7 +113,7 @@ export const getAllRequests = async (
   try {
     const requests = await BloodRequest.find()
       .populate("requester", "bloodBridgeId name phone city")
-      .populate("acceptedBy", "bloodBridgeId name phone city")
+      .populate("acceptedDonors", "bloodBridgeId name phone city")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -171,7 +189,7 @@ export const getDashboardStats = async (
     });
 
     const acceptedRequests = await BloodRequest.countDocuments({
-      status: "Accepted",
+      acceptedCount: { $gt: 0 },
     });
 
     const completedRequests = await BloodRequest.countDocuments({
@@ -304,7 +322,6 @@ export const updateRequestStatus = async (
 
     const validStatuses = [
       "Open",
-      "Accepted",
       "Completed",
       "Cancelled",
     ];
