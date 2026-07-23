@@ -4,7 +4,6 @@ import DonationCard from "../../components/Cards/DonationCard";
 
 import {
   getAcceptedRequests,
-  completeDonation,
 } from "../../services/requestService";
 
 import SectionTitle from "../../components/Cards/SectionTitle";
@@ -19,6 +18,13 @@ interface Request {
   hospitalAddress: string;
   requiredBefore: string;
   status: string;
+
+  acceptedDonors: {
+    donor: {
+      _id: string;
+    };
+    status: "Accepted" | "Completed" | "Rejected";
+  }[];
 }
 
 function DonationsPage() {
@@ -40,27 +46,9 @@ function DonationsPage() {
     }
   };
 
-  const handleComplete = async (id: string) => {
-    try {
-      await completeDonation(id);
-
-      alert("Donation Completed Successfully");
-
-      loadDonations();
-
-    } catch (err: any) {
-
-      alert(
-        err.response?.data?.message ||
-          "Something went wrong"
-      );
-
-    }
-  };
-
   if (loading)
     return (
-      <div className="text-center py-20">
+      <div className="text-center py-20 text-gray-800 dark:text-gray-100">
         Loading...
       </div>
     );
@@ -89,7 +77,6 @@ function DonationsPage() {
             <DonationCard
               key={request._id}
               request={request}
-              onComplete={handleComplete}
             />
 
           ))}

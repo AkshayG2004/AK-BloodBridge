@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================
+   React DatePicker
+========================== */
+
+.react-datepicker {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  font-family: inherit;
+}
+
+.react-datepicker__header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.react-datepicker__current-month {
+  font-weight: 600;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__time-list-item--selected {
+  background: #dc2626 !important;
+}
+
+.react-datepicker__day:hover,
+.react-datepicker__time-list-item:hover {
+  background: #fee2e2;
+}

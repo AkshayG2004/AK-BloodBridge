@@ -23,6 +23,8 @@ import {
 } from "recharts";
 
 import { getDashboardStats } from "../../services/adminService";
+import SectionTitle from "../../components/Cards/SectionTitle";
+import { useTheme } from "../../context/ThemeContext";
 
 const STATUS_COLORS = {
   Open: "#ef4444",
@@ -62,6 +64,8 @@ interface DashboardStats {
 }
 
 function AdminDashboardPage() {
+  const { theme } = useTheme();
+
   const [stats, setStats] = useState<DashboardStats>({
   totalUsers: 0,
   totalRequests: 0,
@@ -123,9 +127,18 @@ function AdminDashboardPage() {
     users: city.count,
   }));
 
+  // Theme-aware colors for chart elements (SVG text/lines don't inherit
+  // Tailwind's dark: classes, so they need explicit values based on theme)
+  const isDark = theme === "dark";
+  const tickColor = isDark ? "#9ca3af" : "#6b7280";
+  const gridStroke = isDark ? "#374151" : "#f1f5f9";
+  const tooltipBg = isDark ? "#1f2937" : "#ffffff";
+  const tooltipBorder = isDark ? "#374151" : "#e5e7eb";
+  const tooltipText = isDark ? "#f3f4f6" : "#111827";
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[60vh] text-xl">
+      <div className="flex justify-center items-center h-[60vh] text-xl text-gray-800 dark:text-gray-100">
         Loading Dashboard...
       </div>
     );
@@ -157,15 +170,12 @@ function AdminDashboardPage() {
 
         <div>
 
-          <h1 className="text-3xl font-bold">
-            Admin Dashboard
-          </h1>
+          <SectionTitle
+            title="Admin Dashboard"
+            subtitle="Monitor users, blood requests and donations."
+          />
 
-          <p className="text-gray-500 mt-1">
-            Monitor users, blood requests and donations.
-          </p>
-
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs text-gray-400 dark:text-gray-500 -mt-5">
             Last updated: {lastUpdated.toLocaleTimeString()}
           </p>
 
@@ -243,9 +253,9 @@ function AdminDashboardPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
 
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
 
-          <h2 className="font-semibold text-lg mb-5">
+          <h2 className="font-semibold text-lg mb-5 text-gray-900 dark:text-gray-100">
             Blood Group Availability
           </h2>
 
@@ -263,12 +273,12 @@ function AdminDashboardPage() {
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#f1f5f9"
+                stroke={gridStroke}
               />
 
               <XAxis
                 dataKey="group"
-                tick={{ fontSize: 13 }}
+                tick={{ fontSize: 13, fill: tickColor }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -277,7 +287,7 @@ function AdminDashboardPage() {
                 allowDecimals={false}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 13 }}
+                tick={{ fontSize: 13, fill: tickColor }}
                 domain={[0, "dataMax + 1"]}
               />
 
@@ -287,8 +297,10 @@ function AdminDashboardPage() {
                 formatter={(value) => [`${Number(value)}`, "Donors"]}
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #e5e7eb",
+                  border: `1px solid ${tooltipBorder}`,
                   boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  backgroundColor: tooltipBg,
+                  color: tooltipText,
                 }}
               />
 
@@ -301,6 +313,7 @@ function AdminDashboardPage() {
                 <LabelList
                     dataKey="donors"
                     position="top"
+                    fill={tickColor}
                 />
               </Bar>
             </BarChart>
@@ -308,9 +321,9 @@ function AdminDashboardPage() {
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
 
-          <h2 className="font-semibold text-lg mb-5">
+          <h2 className="font-semibold text-lg mb-5 text-gray-900 dark:text-gray-100">
             Request Status
           </h2>
 
@@ -332,7 +345,14 @@ function AdminDashboardPage() {
                 ))}
               </Pie>
 
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 12,
+                  border: `1px solid ${tooltipBorder}`,
+                  backgroundColor: tooltipBg,
+                  color: tooltipText,
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -341,7 +361,7 @@ function AdminDashboardPage() {
 
               <div
                 key={item.name}
-                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
+                className="flex items-center justify-between rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-3"
               >
 
                 <div className="flex items-center gap-3">
@@ -354,13 +374,13 @@ function AdminDashboardPage() {
                     }}
                   />
 
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     {item.name}
                   </span>
 
                 </div>
 
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 dark:text-gray-100">
                   {item.value}
                 </span>
 
@@ -378,11 +398,11 @@ function AdminDashboardPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
 
-        <div className="bg-white rounded-2xl shadow">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow">
 
-        <div className="px-6 py-4 border-b">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
 
-          <h2 className="font-semibold">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
             Critical Blood Requests
           </h2>
 
@@ -390,7 +410,7 @@ function AdminDashboardPage() {
 
         <table className="w-full">
 
-          <thead className="text-left bg-gray-50">
+          <thead className="text-left bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
 
             <tr>
 
@@ -415,7 +435,7 @@ function AdminDashboardPage() {
               <tr>
                 <td
                   colSpan={5}
-                  className="text-center py-8 text-gray-500"
+                  className="text-center py-8 text-gray-500 dark:text-gray-400"
                 >
                   No critical requests.
                 </td>
@@ -441,16 +461,16 @@ function AdminDashboardPage() {
 
                   <tr
                     key={index}
-                    className="border-b hover:bg-gray-50 transition"
+                    className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                   >
 
-                    <td className="p-4 font-medium">
+                    <td className="p-4 font-medium text-gray-900 dark:text-gray-100">
                       {request.patientName}
                     </td>
 
                     <td className="p-4">
 
-                      <span className="bg-red-100 text-red-600 font-semibold px-3 py-1 rounded-full text-sm">
+                      <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 font-semibold px-3 py-1 rounded-full text-sm">
 
                         {request.bloodGroup}
 
@@ -458,11 +478,11 @@ function AdminDashboardPage() {
 
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-4 text-gray-700 dark:text-gray-300">
                       {request.hospitalCity}
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-4 text-gray-700 dark:text-gray-300">
 
                       {deadline.toLocaleDateString()}
 
@@ -472,25 +492,25 @@ function AdminDashboardPage() {
 
                       {daysLeft < 0 ? (
 
-                        <span className="text-red-600 font-semibold">
+                        <span className="text-red-600 dark:text-red-400 font-semibold">
                           Overdue
                         </span>
 
                       ) : daysLeft === 0 ? (
 
-                        <span className="text-red-600 font-semibold">
+                        <span className="text-red-600 dark:text-red-400 font-semibold">
                           Today
                         </span>
 
                       ) : daysLeft === 1 ? (
 
-                        <span className="text-yellow-600 font-semibold">
+                        <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
                           Tomorrow
                         </span>
 
                       ) : (
 
-                        <span className="text-green-600 font-semibold">
+                        <span className="text-green-600 dark:text-green-400 font-semibold">
                           {daysLeft} Days
                         </span>
 
@@ -512,9 +532,9 @@ function AdminDashboardPage() {
 
       </div>
 
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
 
-        <h2 className="font-semibold text-lg mb-5">
+        <h2 className="font-semibold text-lg mb-5 text-gray-900 dark:text-gray-100">
           Top Cities by Registered Users
         </h2>
 
@@ -537,17 +557,20 @@ function AdminDashboardPage() {
             <CartesianGrid
               strokeDasharray="3 3"
               horizontal={false}
+              stroke={gridStroke}
             />
 
             <XAxis
               type="number"
               allowDecimals={false}
+              tick={{ fill: tickColor }}
             />
 
             <YAxis
               type="category"
               dataKey="city"
               width={80}
+              tick={{ fill: tickColor }}
             />
 
             <Tooltip
@@ -556,6 +579,12 @@ function AdminDashboardPage() {
                 Number(value),
                 "Users",
               ]}
+              contentStyle={{
+                borderRadius: 12,
+                border: `1px solid ${tooltipBorder}`,
+                backgroundColor: tooltipBg,
+                color: tooltipText,
+              }}
             />
 
             <Bar
@@ -568,6 +597,7 @@ function AdminDashboardPage() {
               <LabelList
                 dataKey="users"
                 position="right"
+                fill={tickColor}
               />
 
             </Bar>
@@ -599,26 +629,26 @@ interface CardProps {
 function StatCard({ title, value, icon, color }: CardProps) {
 
   const colors = {
-    blue: "bg-blue-100 text-blue-600",
-    red: "bg-red-100 text-red-600",
-    green: "bg-green-100 text-green-600",
-    emerald: "bg-emerald-100 text-emerald-600",
-    orange: "bg-orange-100 text-orange-600",
+    blue: "bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400",
+    red: "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400",
+    green: "bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400",
+    emerald: "bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400",
+    orange: "bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400",
   };
 
   return (
 
-    <div className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 hover:shadow-lg transition">
 
       <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${colors[color]}`}>
         {icon}
       </div>
 
-      <p className="text-gray-500 mt-4">
+      <p className="text-gray-500 dark:text-gray-400 mt-4">
         {title}
       </p>
 
-      <h2 className="text-4xl font-bold mt-2">
+      <h2 className="text-4xl font-bold mt-2 text-gray-900 dark:text-gray-100">
         {value}
       </h2>
 

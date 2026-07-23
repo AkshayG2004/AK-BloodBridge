@@ -28,7 +28,7 @@ interface Props {
 
 function DonorCard({ donor }: Props) {
   return (
-    <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 p-6 flex flex-col h-full">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-gray-800 p-6 flex flex-col h-full">
 
       {/* Header */}
 
@@ -36,16 +36,16 @@ function DonorCard({ donor }: Props) {
 
         <div>
 
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <User size={22} />
             {donor.name}
           </h2>
 
-          <div className="mt-2 flex items-center gap-2 text-gray-500">
+          <div className="mt-2 flex items-center gap-2 text-gray-500 dark:text-gray-400">
 
             <BadgeCheck
               size={16}
-              className="text-blue-600"
+              className="text-blue-600 dark:text-blue-400"
             />
 
             <span className="text-sm">
@@ -62,18 +62,21 @@ function DonorCard({ donor }: Props) {
 
       </div>
 
+      {/* Divider */}
+      <div className="border-t border-gray-100 dark:border-gray-800 my-6" />
+
       {/* Body */}
 
-      <div className="mt-8 space-y-4 flex-1 text-gray-700">
+      <div className="space-y-4 flex-1 text-gray-700 dark:text-gray-300">
 
         <div className="flex items-center gap-3">
 
           <Droplets
             size={18}
-            className="text-red-600"
+            className="text-red-600 dark:text-red-400"
           />
 
-          <span className="font-semibold">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
             {donor.bloodGroup}
           </span>
 
@@ -83,7 +86,7 @@ function DonorCard({ donor }: Props) {
 
           <Heart
             size={18}
-            className="text-pink-600"
+            className="text-pink-600 dark:text-pink-400"
           />
 
           <span>
@@ -96,7 +99,7 @@ function DonorCard({ donor }: Props) {
 
           <CalendarDays
             size={18}
-            className="text-gray-500"
+            className="text-gray-500 dark:text-gray-400"
           />
 
           <span>
@@ -113,7 +116,7 @@ function DonorCard({ donor }: Props) {
 
           <MapPin
             size={18}
-            className="text-gray-500"
+            className="text-gray-500 dark:text-gray-400"
           />
 
           <span>
@@ -126,7 +129,7 @@ function DonorCard({ donor }: Props) {
 
           <Phone
             size={18}
-            className="text-gray-500"
+            className="text-gray-500 dark:text-gray-400"
           />
 
           <span>

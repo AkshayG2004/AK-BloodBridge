@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react";
 import MyRequestCard from "../../components/Cards/MyRequestCard";
 import { getMyRequests } from "../../services/requestService";
+import EmptyState from "../../components/Cards/EmptyState";
 
-interface Request {
-  _id: string;
-  patientName: string;
-  bloodGroup: string;
-  unitsRequired: number;
-  hospitalName: string;
-  hospitalAddress: string;
-  requiredBefore: string;
-  status: string;
-  acceptedBy?: {
-    bloodBridgeId: string;
-    name: string;
-    phone: string;
-  };
-}
+import type { BloodRequest } from "../../types/bloodRequest";
 
 function MyRequestsPage() {
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +26,7 @@ function MyRequestsPage() {
 
   if (loading)
     return (
-      <div className="text-center py-20 text-xl">
+      <div className="text-center py-20 text-xl text-gray-800 dark:text-gray-100">
         Loading...
       </div>
     );
@@ -49,11 +36,11 @@ function MyRequestsPage() {
 
       <div className="mb-8">
 
-        <h1 className="text-4xl font-bold">
+        <h1 className="text-3xl font-bold">
           My Requests
         </h1>
 
-        <p className="text-gray-500 mt-2">
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
           Track every blood request you've created.
         </p>
 
@@ -61,21 +48,14 @@ function MyRequestsPage() {
 
       {requests.length === 0 ? (
 
-        <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition duration-300 p-6 flex flex-col h-full">
-
-          <h2 className="text-2xl font-bold">
-            No Requests Yet
-          </h2>
-
-          <p className="text-gray-500 mt-3">
-            Create a blood request whenever you need help.
-          </p>
-
-        </div>
+        <EmptyState
+          title="No Requests Yet"
+          subtitle="Create a blood request whenever you need help."
+        />
 
       ) : (
 
-        <div className="grid xl:grid-cols-2 gap-8 items-stretch">
+        <div className="grid lg:grid-cols-2 gap-6">
 
           {requests.map((request) => (
             <MyRequestCard

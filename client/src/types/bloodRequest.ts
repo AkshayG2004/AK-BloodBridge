@@ -17,7 +17,7 @@ export interface BloodRequest {
 
   notes?: string;
 
-  status: "Open" | "Accepted" | "Completed";
+  status: "Open" | "Completed" | "Cancelled";
 
   requester?: {
     _id: string;
@@ -27,13 +27,21 @@ export interface BloodRequest {
     city: string;
   };
 
-  acceptedBy?: {
-    _id: string;
-    bloodBridgeId: string;
-    name: string;
-    phone: string;
-    city: string;
-  };
+  acceptedCount: number;
+
+  acceptedDonors: {
+    donor: {
+      _id: string;
+      bloodBridgeId: string;
+      name: string;
+      phone: string;
+      city: string;
+    };
+
+    status: "Accepted" | "Completed" | "Rejected";
+
+    confirmedAt?: string;
+  }[];
 
   createdAt: string;
   updatedAt: string;

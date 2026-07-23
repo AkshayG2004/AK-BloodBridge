@@ -5,6 +5,7 @@ import bloodRequestRoutes from "./routes/bloodRequestRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import profileRoutes from "./routes/profileRoutes";
+import factRoutes from "./routes/factRoutes";
 
 const app = express();
 console.log("APP FILE LOADED");
@@ -35,6 +36,9 @@ app.use("/api/dashboard", dashboardRoutes);
 
 // Profile Routes
 app.use("/api/profile", profileRoutes);
+
+// Fact Routes
+app.use("/api/facts", factRoutes);
 
 // Admin Routes
 app.use("/api/admin", adminRoutes);

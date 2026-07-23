@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   CalendarDays,
   Hospital,
@@ -7,6 +9,7 @@ import {
 } from "lucide-react";
 
 import StatusBadge from "./StatusBadge";
+import { useAuth } from "../../context/AuthContext";
 
 interface Request {
   _id: string;
@@ -17,19 +20,31 @@ interface Request {
   hospitalAddress: string;
   requiredBefore: string;
   status: string;
+
+  acceptedDonors: {
+    donor: {
+      _id: string;
+    };
+    status: "Accepted" | "Completed" | "Rejected";
+  }[];
 }
 
 interface Props {
   request: Request;
-  onComplete: (id: string) => void;
 }
 
-function DonationCard({
-  request,
-  onComplete,
-}: Props) {
+function DonationCard({ request }: Props) {
+  const { user } = useAuth();
+
+  const [currentRequest] = useState(request);
+  const displayRequest = currentRequest;
+
+  const myDonation = displayRequest.acceptedDonors?.find(
+    (d) => d.donor._id === user?._id
+  );
+
   return (
-    <div className="bg-white rounded-3xl shadow-md hover:shadow-xl transition duration-300 p-6 flex flex-col justify-between">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-gray-800 p-6 flex flex-col h-full">
 
       <div>
 
@@ -37,37 +52,41 @@ function DonationCard({
 
           <div>
 
-            <h2 className="text-3xl font-bold">
-              {request.patientName}
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {displayRequest.patientName}
             </h2>
 
-            <div className="mt-3 inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded-full font-semibold">
+            <div className="mt-3 inline-flex items-center gap-2 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full font-semibold text-sm">
               <Droplets size={16} />
-              {request.bloodGroup}
+              {displayRequest.bloodGroup}
             </div>
 
           </div>
 
-          <StatusBadge status={request.status} />
+          <StatusBadge status={displayRequest.status} />
 
         </div>
 
-        <div className="mt-8 space-y-4 text-gray-600">
+        <div className="border-t border-gray-100 dark:border-gray-800 my-6" />
+
+        <div className="space-y-4 text-gray-600 dark:text-gray-400">
 
           <div className="flex items-center gap-3">
-            <Hospital size={18} />
-            {request.hospitalName}
+            <Hospital size={18} className="text-gray-500 dark:text-gray-400" />
+            <span className="text-gray-900 dark:text-gray-100">
+              {displayRequest.hospitalName}
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <MapPin size={18} />
-            {request.hospitalAddress}
+            <MapPin size={18} className="text-gray-500 dark:text-gray-400" />
+            {displayRequest.hospitalAddress}
           </div>
 
           <div className="flex items-center gap-3">
-            <CalendarDays size={18} />
+            <CalendarDays size={18} className="text-gray-500 dark:text-gray-400" />
             {new Date(
-              request.requiredBefore
+              displayRequest.requiredBefore
             ).toLocaleDateString()}
           </div>
 
@@ -75,41 +94,39 @@ function DonationCard({
 
       </div>
 
-      <div className="mt-8 border-t pt-5">
+      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
 
         <div className="flex justify-between items-center">
 
           <div>
 
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               Units Required
             </p>
 
-            <h2 className="text-2xl font-bold">
-              {request.unitsRequired}
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {displayRequest.unitsRequired}
             </h2>
 
           </div>
 
-          {request.status === "Accepted" ? (
-
-            <button
-              onClick={() => onComplete(request._id)}
-              className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
-            >
-              Complete Donation
-            </button>
-
-          ) : (
-
-            <div className="flex items-center gap-2 text-green-600 font-semibold">
-
-              <CheckCircle size={22} />
-
-              Donation Completed
-
+          {myDonation?.status === "Accepted" && (
+            <div className="text-yellow-600 dark:text-yellow-400 font-semibold">
+              Awaiting Requester's Confirmation
             </div>
+          )}
 
+          {myDonation?.status === "Completed" && (
+            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold">
+              <CheckCircle size={22} />
+              Donation Completed
+            </div>
+          )}
+
+          {myDonation?.status === "Rejected" && (
+            <div className="font-semibold text-red-600 dark:text-red-400">
+              Donation Rejected
+            </div>
           )}
 
         </div>

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User";
 import PendingUser from "../models/PendingUser";
+import PasswordReset from "../models/PasswordReset";
 import { sendOTPEmail } from "../services/emailService";
 
 import generateBloodBridgeId from "../utils/generateBloodBridgeId";
@@ -65,6 +66,136 @@ export const sendRegistrationOTP = async (
 
   } catch (error) {
     console.error("========== SEND OTP ERROR ==========");
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// ==========================
+// Forgot Password - Send OTP
+// ==========================
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // Check whether user exists
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Save / Update Password Reset OTP
+    await PasswordReset.findOneAndUpdate(
+      { email },
+      {
+        email,
+        otp,
+        otpExpires: new Date(Date.now() + 5 * 60 * 1000),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    // Send OTP Email
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset OTP sent successfully",
+    });
+
+  } catch (error) {
+
+    console.error("========== FORGOT PASSWORD ERROR ==========");
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const resetRequest = await PasswordReset.findOne({ email });
+
+    if (!resetRequest) {
+      return res.status(400).json({
+        success: false,
+        message: "Password reset request not found",
+      });
+    }
+
+    if (resetRequest.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (resetRequest.otpExpires < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findOneAndUpdate(
+      { email },
+      {
+        password: hashedPassword,
+      }
+    );
+
+    await PasswordReset.deleteOne({ email });
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+
+  } catch (error) {
     console.error(error);
 
     res.status(500).json({

@@ -6,14 +6,19 @@ import "./index.css";
 import App from "./App";
 
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Toaster } from "react-hot-toast";
+import "react-datepicker/dist/react-datepicker.css";
 
 const queryClient = new QueryClient();
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
+
       <AuthProvider>
+
         <App />
 
         <Toaster
@@ -29,6 +34,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         />
 
       </AuthProvider>
-    </QueryClientProvider>
+
+    </ThemeProvider>
+  </QueryClientProvider>
   </React.StrictMode>
 );

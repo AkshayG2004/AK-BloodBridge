@@ -7,6 +7,7 @@ import {
 import RequestDetailsModal from "../../components/Modals/RequestDetailsModal";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import SectionTitle from "../../components/Cards/SectionTitle";
 
 interface Request {
   _id: string;
@@ -90,7 +91,7 @@ function ManageRequestsPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-xl">
+      <div className="text-center py-20 text-xl text-gray-800 dark:text-gray-100">
         Loading requests...
       </div>
     );
@@ -99,11 +100,12 @@ function ManageRequestsPage() {
   return (
     <div>
 
-      <h1 className="text-4xl font-bold mb-8">
-        Manage Blood Requests
-      </h1>
+      <SectionTitle
+        title="Manage Blood Requests"
+        subtitle="View, inspect and manage all blood requests."
+      />
 
-      <div className="bg-white rounded-2xl shadow overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow overflow-x-auto">
 
         <table className="w-full">
 
@@ -149,30 +151,30 @@ function ManageRequestsPage() {
 
               <tr
                 key={request._id}
-                className="border-b hover:bg-gray-50"
+                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.requester?.name}
                 </td>
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.bloodGroup}
                 </td>
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.hospitalName}
                 </td>
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.hospitalCity}
                 </td>
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.urgency}
                 </td>
 
-                <td className="p-4">
+                <td className="p-4 text-gray-800 dark:text-gray-200">
                   {request.status}
                 </td>
 

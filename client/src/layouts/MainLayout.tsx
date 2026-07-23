@@ -7,7 +7,11 @@ import {
   LogOut,
   PlusCircle,
   HeartHandshake,
+  Sun,
+  Moon
 } from "lucide-react";
+
+import { useTheme } from "../context/ThemeContext";
 
 import {
   NavLink,
@@ -23,45 +27,47 @@ import { getProfile } from "../services/profileService";
 
 function MainLayout() {
   const {
-  logout,
-  user,
-  refreshUser,
-} = useAuth();
+    logout,
+    user,
+    refreshUser,
+  } = useAuth();
+
+  const { theme, toggleTheme } = useTheme();
 
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
 
-  if (!user || user.role === "admin") return;
+    if (!user || user.role === "admin") return;
 
-  const loadProfile = async () => {
+    const loadProfile = async () => {
 
-    try {
+      try {
 
-      const res = await getProfile();
+        const res = await getProfile();
 
-      refreshUser(res.user);
+        refreshUser(res.user);
 
-      if (
-        !res.user.isProfileComplete &&
-        location.pathname !== "/profile"
-      ) {
-        navigate("/profile", { replace: true });
+        if (
+          !res.user.isProfileComplete &&
+          location.pathname !== "/profile"
+        ) {
+          navigate("/profile", { replace: true });
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
       }
 
-    } catch (error) {
+    };
 
-      console.error(error);
+    loadProfile();
 
-    }
-
-  };
-
-  loadProfile();
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const dashboardMenu = [
     {
@@ -158,8 +164,8 @@ function MainLayout() {
             item.path !== "/profile"
               ? "opacity-50 cursor-not-allowed"
               : isActive
-              ? "bg-white text-red-700 font-semibold shadow-md"
-              : "hover:bg-red-600"
+              ? "bg-white text-red-700 font-semibold shadow-md dark:bg-gray-100 dark:text-red-700"
+              : "hover:bg-red-600 dark:hover:bg-red-950"
           }`
         }
       >
@@ -169,19 +175,19 @@ function MainLayout() {
     ));
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-950 overflow-hidden transition-colors">
 
       {/* Sidebar */}
 
-      <aside className="w-72 h-screen bg-gradient-to-b from-red-700 to-red-900 text-white flex flex-col shadow-xl flex-shrink-0">
+      <aside className="w-72 h-screen bg-gradient-to-b from-red-700 to-red-900 dark:from-red-950 dark:to-black text-white flex flex-col shadow-xl flex-shrink-0 transition-colors">
 
-        <div className="p-8 border-b border-red-500">
+        <div className="p-8 border-b border-red-500 dark:border-red-900">
 
           <h1 className="text-3xl font-bold">
-            AK BloodBridge
+            BloodBridge
           </h1>
 
-          <p className="text-red-200 mt-2">
+          <p className="text-red-200 dark:text-red-300 mt-2">
             Donate Blood. Save Lives.
           </p>
 
@@ -201,7 +207,7 @@ function MainLayout() {
 
   <div className="mt-8">
 
-    <p className="text-xs uppercase tracking-widest text-red-300 mb-3 px-2">
+    <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
       Administration
     </p>
 
@@ -221,7 +227,7 @@ function MainLayout() {
 
         <div className="mt-8">
 
-          <p className="text-xs uppercase tracking-widest text-red-300 mb-3 px-2">
+          <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
             Requests
           </p>
 
@@ -237,7 +243,7 @@ function MainLayout() {
 
         <div className="mt-8">
 
-          <p className="text-xs uppercase tracking-widest text-red-300 mb-3 px-2">
+          <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
             Community
           </p>
 
@@ -253,7 +259,7 @@ function MainLayout() {
 
         <div className="mt-8">
 
-          <p className="text-xs uppercase tracking-widest text-red-300 mb-3 px-2">
+          <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
             Account
           </p>
 
@@ -273,17 +279,41 @@ function MainLayout() {
 
         {/* User */}
 
-        <div className="border-t border-red-500 p-6">
+        <div className="border-t border-red-500 dark:border-red-900 p-6">
 
-          <div className="mb-5">
+          <div className="flex items-center justify-between mb-5">
 
-            <h3 className="font-bold text-lg">
-              {user?.name}
-            </h3>
+            <div>
 
-            <p className="text-red-200 text-sm">
-              {user?.bloodGroup} • {user?.role}
-            </p>
+              <h3 className="font-bold text-lg">
+                {user?.name}
+              </h3>
+
+              <p className="text-red-200 dark:text-red-300 text-sm">
+                {user?.bloodGroup} • {user?.role}
+              </p>
+
+            </div>
+
+            <div className="flex flex-col items-center gap-1.5">
+
+              <span className="text-[10px] uppercase tracking-wide text-red-200 dark:text-red-300">
+                Theme
+              </span>
+
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle dark mode"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 border border-white/30 text-white hover:bg-white/25 hover:border-white/50 active:scale-95 transition-all duration-200 shadow-sm"
+              >
+                {theme === "dark" ? (
+                  <Sun size={18} />
+                ) : (
+                  <Moon size={18} />
+                )}
+              </button>
+
+            </div>
 
           </div>
 
@@ -292,7 +322,7 @@ function MainLayout() {
               logout();
               navigate("/");
             }}
-            className="flex items-center justify-center gap-2 bg-white text-red-700 rounded-xl w-full py-3 font-semibold hover:bg-gray-100 transition"
+            className="flex items-center justify-center gap-2 bg-white text-red-700 rounded-xl w-full py-3 font-semibold hover:bg-gray-100 dark:hover:bg-gray-200 transition"
           >
             <LogOut size={18} />
             Logout
@@ -304,7 +334,7 @@ function MainLayout() {
 
       {/* Main Content */}
 
-      <main className="flex-1 h-screen overflow-y-auto bg-gray-100">
+      <main className="flex-1 h-screen overflow-y-auto bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
         <div className="p-8">
           <Navbar />
           <Outlet />

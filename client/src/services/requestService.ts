@@ -47,3 +47,31 @@ export const completeDonation = async (id: string) => {
   const res = await api.put(`/requests/${id}/complete`);
   return res.data;
 };
+
+// ==========================
+// Confirm Donation (Requester)
+// ==========================
+export const confirmDonation = async (
+  requestId: string,
+  donorId: string
+) => {
+  const res = await api.patch(
+    `/requests/${requestId}/confirm/${donorId}`
+  );
+
+  return res.data;
+};
+
+// ==========================
+// Reject Donation (Requester)
+// ==========================
+export const rejectDonation = async (
+  requestId: string,
+  donorId: string
+) => {
+  const res = await api.patch(
+    `/requests/${requestId}/reject/${donorId}`
+  );
+
+  return res.data;
+};

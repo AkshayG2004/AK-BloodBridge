@@ -3,6 +3,8 @@ import {
   sendRegistrationOTP,
   registerUser,
   loginUser,
+  forgotPassword,
+  resetPassword,
   getMyProfile,
   updateProfile,
   updateLocation,
@@ -23,6 +25,11 @@ router.post("/send-otp", sendRegistrationOTP);
 router.post("/register", registerUser);
 
 router.post("/login", loginUser);
+
+router.post("/forgot-password", forgotPassword);
+
+router.post("/reset-password", resetPassword);
+
 
 // ==========================
 // Protected Routes

@@ -6,44 +6,7 @@ import {
 } from "../../services/requestService";
 import toast from "react-hot-toast";
 
-interface BloodRequest {
-  _id: string;
-
-  patientName: string;
-  bloodGroup: string;
-  unitsRequired: number;
-
-  hospitalName: string;
-  hospitalCity: string;
-  hospitalAddress: string;
-
-  contactPerson: string;
-  contactNumber: string;
-
-  urgency: string;
-  requiredBefore: string;
-  notes?: string;
-
-  status: string;
-
-  requester?: {
-    _id: string;
-    bloodBridgeId: string;
-    name: string;
-    phone: string;
-    city: string;
-  };
-
-  acceptedBy?: {
-    _id: string;
-    bloodBridgeId: string;
-    name: string;
-    phone: string;
-    city: string;
-  };
-
-  createdAt?: string;
-}
+import type { BloodRequest } from "../../types/bloodRequest";
 
 function RequestsPage() {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
@@ -81,7 +44,7 @@ function RequestsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[50vh]">
+      <div className="flex justify-center items-center h-[50vh] text-gray-800 dark:text-gray-100">
           Loading blood requests...
       </div>
     );
@@ -95,18 +58,18 @@ function RequestsPage() {
           Blood Requests
         </h1>
 
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           Help save lives by accepting a request.
         </p>
       </div>
 
       {requests.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow p-10 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-10 text-center">
           <h2 className="text-2xl font-bold">
             No Blood Requests Available
           </h2>
 
-          <p className="text-gray-500 mt-3">
+          <p className="text-gray-500 dark:text-gray-400 mt-3">
             There are currently no active blood requests near you.
             Please check back later.
           </p>

@@ -10,11 +10,11 @@ function SectionTitle({
   return (
     <div className="mb-8">
 
-      <h1 className="text-5xl font-bold">
+      <h1 className="text-3xl font-bold">
         {title}
       </h1>
 
-      <p className="text-gray-500 mt-2 text-lg">
+      <p className="text-gray-500 dark:text-gray-400 mt-1">
         {subtitle}
       </p>
 

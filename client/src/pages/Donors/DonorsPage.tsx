@@ -22,9 +22,8 @@ function DonorsPage() {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("All");
+  const [cityFilter, setCityFilter] = useState("All");
 
   useEffect(() => {
     loadDonors();
@@ -45,101 +44,180 @@ function DonorsPage() {
     }
   };
 
-  const filteredDonors = useMemo(() => {
+  const cities = [
+    "All",
+    ...Array.from(
+      new Set(
+        donors
+          .map((donor) => donor.city)
+          .filter(Boolean)
+      )
+    ).sort(),
+  ];
+
+ const filteredDonors = useMemo(() => {
     return donors.filter((donor) => {
-
-      const matchesName =
-        donor.name
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
       const matchesBlood =
-        bloodGroup === "" ||
-        donor.bloodGroup === bloodGroup;
+      bloodGroup === "All" ||
+      donor.bloodGroup === bloodGroup;
 
-      const matchesAvailability =
-        availability === "" ||
-        donor.availabilityStatus === availability;
+      const matchesCity =
+        cityFilter === "All" ||
+        donor.city === cityFilter;
 
-      return (
-        matchesName &&
-        matchesBlood &&
-        matchesAvailability
-      );
+      return matchesBlood && matchesCity;
     });
-  }, [donors, search, bloodGroup, availability]);
+  }, [donors, bloodGroup, cityFilter]);
 
   return (
     <div>
 
-      <SectionTitle
-        title="Available Donors"
-        subtitle="Search and connect with eligible blood donors."
-      />
+      <div className="flex items-end justify-between mb-5">
 
-      {/* Filters */}
+        {/* Left */}
 
-      <div className="bg-white rounded-3xl shadow-md p-6 mb-8">
+        <SectionTitle
+          title="Available Donors"
+          subtitle="Search and connect with eligible blood donors."
+        />
 
-        <div className="grid lg:grid-cols-3 gap-5">
+        {/* Right */}
 
-          <input
-            type="text"
-            placeholder="Search donor..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            className="border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-          />
+        <div className="flex items-end gap-2">
 
-          <select
-            value={bloodGroup}
-            onChange={(e) =>
-              setBloodGroup(e.target.value)
-            }
-            className="border rounded-xl px-4 py-3 outline-none"
-          >
-            <option value="">All Blood Groups</option>
+        {/* Blood Group */}
 
-            <option>O+</option>
-            <option>O-</option>
+        <div>
 
-            <option>A+</option>
-            <option>A-</option>
+          <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+            Blood
+          </p>
 
-            <option>B+</option>
-            <option>B-</option>
+          <div className="relative w-24">
 
-            <option>AB+</option>
-            <option>AB-</option>
+            <select
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
+              className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 pr-9 text-sm appearance-none focus:outline-none focus:border-red-500"
+            >
 
-          </select>
+              <option value="All">All</option>
 
-          <select
-            value={availability}
-            onChange={(e) =>
-              setAvailability(e.target.value)
-            }
-            className="border rounded-xl px-4 py-3 outline-none"
-          >
-            <option value="">All Availability</option>
+              <option>A+</option>
+              <option>A-</option>
+              <option>B+</option>
+              <option>B-</option>
+              <option>AB+</option>
+              <option>AB-</option>
+              <option>O+</option>
+              <option>O-</option>
 
-            <option>Available</option>
-            <option>Busy</option>
-            <option>Unavailable</option>
+            </select>
 
-          </select>
+            <svg
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+
+          </div>
 
         </div>
 
+        {/* City */}
+
+        <div>
+
+          <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+            City
+          </p>
+
+          <div className="relative w-36">
+
+            <select
+              value={cityFilter}
+              onChange={(e) =>
+                setCityFilter(e.target.value)
+              }
+              className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 pr-9 text-sm appearance-none focus:outline-none focus:border-red-500"
+            >
+
+              {cities.map((city) => (
+                <option
+                  key={city}
+                  value={city}
+                >
+                  {city}
+                </option>
+              ))}
+
+            </select>
+
+            <svg
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+
+          </div>
+
+        </div>
+
+        {/* Count */}
+
+        <div className="h-9 px-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Donors
+          </span>
+
+          <span className="font-bold text-red-600 dark:text-red-400">
+            {filteredDonors.length}
+          </span>
+
+        </div>
+
+        {/* Reset */}
+
+        {(bloodGroup !== "All" || cityFilter !== "All") && (
+
+          <button
+            onClick={() => {
+              setBloodGroup("All");
+              setCityFilter("All");
+            }}
+            className="h-9 px-4 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 text-sm hover:bg-red-100 dark:hover:bg-red-900 transition"
+          >
+            Reset
+          </button>
+
+        )}
+
       </div>
+
+    </div>
 
       {/* Loading */}
 
       {loading ? (
 
-        <div className="text-center py-20 text-gray-500 text-xl">
+        <div className="text-center py-20 text-gray-500 dark:text-gray-400 text-xl">
           Loading donors...
         </div>
 
@@ -152,7 +230,7 @@ function DonorsPage() {
 
       ) : (
 
-        <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-6">
+        <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-6 mt-1">
 
           {filteredDonors.map((donor) => (
 
