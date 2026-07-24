@@ -1,14 +1,19 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "AK BloodBridge Backend",
+  "main": "dist/server.js",
+
   "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts"
+    "dev": "ts-node-dev --respawn src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+
+  "engines": {
+    "node": ">=20"
+  },
+
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -20,6 +25,7 @@
     "nodemailer": "^9.0.3",
     "sib-api-v3-sdk": "^8.5.0"
   },
+
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
