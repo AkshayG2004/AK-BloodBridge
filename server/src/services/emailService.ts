@@ -28,12 +28,12 @@ export const sendOTPEmail = async (
 ) => {
   try {
     console.log("========== EMAIL DEBUG ==========");
-    console.log("FROM:", process.env.EMAIL_USER);
+    console.log("FROM:", process.env.SENDER_EMAIL);
     console.log("TO:", email);
     console.log("OTP:", otp);
 
     const info = await transporter.sendMail({
-      from: `"AK BloodBridge" <${process.env.EMAIL_USER}>`,
+      from: `"AK BloodBridge" <${process.env.SENDER_EMAIL}>`,
 
       to: email,
 
@@ -93,9 +93,9 @@ export const sendContactEmail = async (
     console.log("SUBJECT:", subject);
 
     const info = await transporter.sendMail({
-      from: `"AK BloodBridge Contact" <${process.env.EMAIL_USER}>`,
+      from: `"AK BloodBridge Contact" <${process.env.SENDER_EMAIL}>`,
 
-      to: process.env.EMAIL_USER, // sends to your own admin inbox
+      to: process.env.SENDER_EMAIL, // sends to your own admin inbox
 
       replyTo: email, // lets you hit "Reply" and respond directly to the user
 
