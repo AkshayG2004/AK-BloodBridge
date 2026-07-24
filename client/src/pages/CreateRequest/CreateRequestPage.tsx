@@ -58,8 +58,76 @@ const [requiredDate, setRequiredDate] = useState<Date | null>(null);
   ) => {
     e.preventDefault();
 
+    // Explicit mandatory-field validation.
+    // Native HTML5 `required` only blocks truly empty values — a single
+    // space, or react-datepicker's unreliable `required` prop, can still
+    // slip through and submit. Trim + check every mandatory field here.
+
+    if (!formData.patientName.trim()) {
+      toast.error("Patient Name is required.");
+      return;
+    }
+
+    if (!formData.bloodGroup.trim()) {
+      toast.error("Please select a Blood Group.");
+      return;
+    }
+
+    if (
+      !formData.unitsRequired ||
+      formData.unitsRequired < 1 ||
+      formData.unitsRequired > 10
+    ) {
+      toast.error("Units Required must be between 1 and 10.");
+      return;
+    }
+
+    if (!formData.urgency.trim()) {
+      toast.error("Please select the Urgency level.");
+      return;
+    }
+
+    if (!formData.contactPerson.trim()) {
+      toast.error("Contact Person is required.");
+      return;
+    }
+
+    if (!formData.contactNumber.trim()) {
+      toast.error("Contact Number is required.");
+      return;
+    }
+
+    if (!formData.hospitalName.trim()) {
+      toast.error("Hospital Name is required.");
+      return;
+    }
+
+    if (!formData.hospitalCity.trim()) {
+      toast.error("Hospital City is required.");
+      return;
+    }
+
+    if (!formData.hospitalAddress.trim()) {
+      toast.error("Hospital Address is required.");
+      return;
+    }
+
+    if (!requiredDate || !formData.requiredBefore) {
+      toast.error("Please select the Required Before date & time.");
+      return;
+    }
+
     try {
-      await createBloodRequest(formData);
+      await createBloodRequest({
+        ...formData,
+        patientName: formData.patientName.trim(),
+        hospitalName: formData.hospitalName.trim(),
+        hospitalCity: formData.hospitalCity.trim(),
+        hospitalAddress: formData.hospitalAddress.trim(),
+        contactPerson: formData.contactPerson.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        notes: formData.notes.trim(),
+      });
 
       toast.success("Blood Request Created Successfully!");
 

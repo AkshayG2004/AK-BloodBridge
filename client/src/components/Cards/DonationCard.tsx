@@ -10,6 +10,7 @@ import {
 
 import StatusBadge from "./StatusBadge";
 import { useAuth } from "../../context/AuthContext";
+import { formatDate } from "../../utils/date";
 
 interface Request {
   _id: string;
@@ -85,9 +86,7 @@ function DonationCard({ request }: Props) {
 
           <div className="flex items-center gap-3">
             <CalendarDays size={18} className="text-gray-500 dark:text-gray-400" />
-            {new Date(
-              displayRequest.requiredBefore
-            ).toLocaleDateString()}
+            {formatDate(displayRequest.requiredBefore)}
           </div>
 
         </div>
