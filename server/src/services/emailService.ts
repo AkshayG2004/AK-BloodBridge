@@ -9,6 +9,17 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  logger: true,
+  debug: true,
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP VERIFY ERROR:", error);
+  } else {
+    console.log("SMTP VERIFY SUCCESS");
+  }
 });
 
 export const sendOTPEmail = async (
