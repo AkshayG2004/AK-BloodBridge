@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { Helmet } from "react-helmet-async";
 
 import {
   Heart,
@@ -85,7 +86,9 @@ function DashboardPage() {
   useEffect(() => {
     const loadFact = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/facts/random");
+        const response = await fetch(
+          "https://ak-bloodbridge.onrender.com/api/facts/random"
+        );
         const data = await response.json();
 
         if (data.success) {
@@ -122,286 +125,292 @@ function DashboardPage() {
   const hasDonatedBefore = (stats?.myDonations ?? 0) > 0;
 
   return (
-    <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
+    <>
+      <Helmet>
+        <title>Dashboard | AK BloodBridge</title>
+      </Helmet>
 
-      {/* ================= HEADER ================= */}
+      <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        {/* ================= HEADER ================= */}
+
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              Welcome back, {stats?.userName}
+            </h1>
+
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Welcome to BloodBridge.
+            </p>
+
+          </div>
+
+          <div
+            className={`rounded-xl px-4 py-2 w-full sm:w-auto text-left sm:text-right ${availabilityInfo.bg}`}
+          >
+            <p className={`text-sm font-bold ${availabilityInfo.text}`}>
+              {availabilityInfo.dot} {stats?.availabilityStatus?.toUpperCase() ?? "--"}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 sm:max-w-[180px]">
+              {availabilityInfo.label}
+            </p>
+          </div>
+
+        </div>
+
+        {/* ================= MY IMPACT ================= */}
 
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">
-            Welcome back, {stats?.userName}
-          </h1>
+          <h2 className="text-lg sm:text-xl font-bold mb-4">My Impact</h2>
 
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Welcome to BloodBridge.
-          </p>
-
-        </div>
-
-        <div
-          className={`rounded-xl px-4 py-2 w-full sm:w-auto text-left sm:text-right ${availabilityInfo.bg}`}
-        >
-          <p className={`text-sm font-bold ${availabilityInfo.text}`}>
-            {availabilityInfo.dot} {stats?.availabilityStatus?.toUpperCase() ?? "--"}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 sm:max-w-[180px]">
-            {availabilityInfo.label}
-          </p>
-        </div>
-
-      </div>
-
-      {/* ================= MY IMPACT ================= */}
-
-      <div>
-        <h2 className="text-lg sm:text-xl font-bold mb-4">My Impact</h2>
-
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-
-          <StatCard
-            title="Donations Made"
-            value={stats?.myDonations ?? 0}
-            icon={<Heart size={28} />}
-          />
-
-          <StatCard
-            title="Requests Raised"
-            value={stats?.myRequests ?? 0}
-            icon={<ClipboardList size={28} />}
-          />
-
-          {hasDonatedBefore && (
-            <div className="xs:col-span-2 lg:col-span-1">
-              <StatCard
-                title="Last Donation"
-                value={
-                  stats?.lastDonationDate
-                    ? format(new Date(stats.lastDonationDate), "dd MMM yyyy")
-                    : "--"
-                }
-                icon={<Clock size={28} />}
-              />
-            </div>
-          )}
-
-        </div>
-      </div>
-
-      {/* ================= MY BLOOD INFO & TOP CITIES ================= */}
-
-      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
-
-          <SectionHeading icon={<Droplets size={20} />} title="My Information" />
-
-          <div className="space-y-5 flex-1 flex flex-col justify-center">
-
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Blood Group</span>
-              <span className="font-semibold">{stats?.bloodGroup ?? "--"}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">City</span>
-              <span className="font-semibold">{stats?.city ?? "--"}</span>
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
-
-          <SectionHeading icon={<Trophy size={20} />} title="Top Active Cities" />
-
-          {stats?.cityRanking?.length ? (
-            <div className="space-y-4 flex-1 flex flex-col justify-center">
-              {stats.cityRanking.map((c: any, index: number) => (
-                <div
-                  key={c.city}
-                  className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 last:border-0 pb-3"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 font-bold text-sm shrink-0">
-                      {index + 1}
-                    </span>
-                    <span className="font-medium">{c.city}</span>
-                  </div>
-                  <span className="text-gray-500 dark:text-gray-400">
-                    {c.count} {c.count === 1 ? "donor" : "donors"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-400 dark:text-gray-500">No city data available yet.</p>
-            </div>
-          )}
-
-        </div>
-
-      </div>
-
-      {/* ================= BLOODBRIDGE NETWORK ================= */}
-
-      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
-
-          <SectionHeading icon={<Users size={20} />} title="BloodBridge Network" />
-
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 flex-1 content-center">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
             <StatCard
-              title="Registered Donors"
-              value={stats?.totalDonors ?? 0}
-              icon={<Users size={26} />}
+              title="Donations Made"
+              value={stats?.myDonations ?? 0}
+              icon={<Heart size={28} />}
             />
 
             <StatCard
-              title="Registered In Your City"
-              value={stats?.registeredCityDonors ?? 0}
-              icon={<MapPin size={26} />}
+              title="Requests Raised"
+              value={stats?.myRequests ?? 0}
+              icon={<ClipboardList size={28} />}
             />
 
-            <StatCard
-              title="Available Donors"
-              value={stats?.availableDonors ?? 0}
-              icon={<Heart size={26} />}
-            />
-
-            <StatCard
-              title="Available Donors In Your City"
-              value={stats?.availableCityDonors ?? 0}
-              icon={<MapPin size={26} />}
-            />
-
-          </div>
-
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
-
-          <SectionHeading icon={<BarChart3 size={20} />} title="Overall Statistics" />
-
-          <div className="space-y-5 flex-1 flex flex-col justify-center">
-
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Registered Donors</span>
-              <span className="font-semibold">{stats?.totalDonors}</span>
-            </div>
-
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Available Donors</span>
-              <span className="font-semibold">{stats?.availableDonors}</span>
-            </div>
-
-            <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-              <span className="text-gray-500 dark:text-gray-400">Open Requests</span>
-              <span className="font-semibold">{stats?.openRequests}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Completed Donations</span>
-              <span className="font-semibold">{stats?.completedDonations}</span>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ================= DISTRIBUTION CHARTS ================= */}
-
-      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
-
-          <SectionHeading icon={<BarChart3 size={20} />} title="Blood Group Distribution" />
-
-          {stats?.bloodGroupDistribution?.length ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart
-                data={stats.bloodGroupDistribution}
-                layout="vertical"
-                margin={{ left: 10, right: 10 }}
-              >
-                <XAxis type="number" allowDecimals={false} />
-                <YAxis type="category" dataKey="group" width={50} />
-                <Tooltip cursor={false} />
-                <Bar
-                  dataKey="count"
-                  fill="#dc2626"
-                  radius={[0, 6, 6, 0]}
-                  activeBar={{ fill: "#b91c1c" }}
+            {hasDonatedBefore && (
+              <div className="xs:col-span-2 lg:col-span-1">
+                <StatCard
+                  title="Last Donation"
+                  value={
+                    stats?.lastDonationDate
+                      ? format(new Date(stats.lastDonationDate), "dd MMM yyyy")
+                      : "--"
+                  }
+                  icon={<Clock size={28} />}
                 />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-400 dark:text-gray-500">No donor data available yet.</p>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* ================= MY BLOOD INFO & TOP CITIES ================= */}
+
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<Droplets size={20} />} title="My Information" />
+
+            <div className="space-y-5 flex-1 flex flex-col justify-center">
+
+              <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <span className="text-gray-500 dark:text-gray-400">Blood Group</span>
+                <span className="font-semibold">{stats?.bloodGroup ?? "--"}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">City</span>
+                <span className="font-semibold">{stats?.city ?? "--"}</span>
+              </div>
+
             </div>
-          )}
+
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<Trophy size={20} />} title="Top Active Cities" />
+
+            {stats?.cityRanking?.length ? (
+              <div className="space-y-4 flex-1 flex flex-col justify-center">
+                {stats.cityRanking.map((c: any, index: number) => (
+                  <div
+                    key={c.city}
+                    className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 last:border-0 pb-3"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 font-bold text-sm shrink-0">
+                        {index + 1}
+                      </span>
+                      <span className="font-medium">{c.city}</span>
+                    </div>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {c.count} {c.count === 1 ? "donor" : "donors"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-gray-400 dark:text-gray-500">No city data available yet.</p>
+              </div>
+            )}
+
+          </div>
 
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+        {/* ================= BLOODBRIDGE NETWORK ================= */}
 
-          <SectionHeading icon={<PieChartIcon size={20} />} title="Availability Distribution" />
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
 
-          {stats?.availabilityDistribution?.length ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={stats.availabilityDistribution}
-                  dataKey="count"
-                  nameKey="status"
-                  innerRadius={60}
-                  outerRadius={95}
-                  paddingAngle={2}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<Users size={20} />} title="BloodBridge Network" />
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 flex-1 content-center">
+
+              <StatCard
+                title="Registered Donors"
+                value={stats?.totalDonors ?? 0}
+                icon={<Users size={26} />}
+              />
+
+              <StatCard
+                title="Registered In Your City"
+                value={stats?.registeredCityDonors ?? 0}
+                icon={<MapPin size={26} />}
+              />
+
+              <StatCard
+                title="Available Donors"
+                value={stats?.availableDonors ?? 0}
+                icon={<Heart size={26} />}
+              />
+
+              <StatCard
+                title="Available Donors In Your City"
+                value={stats?.availableCityDonors ?? 0}
+                icon={<MapPin size={26} />}
+              />
+
+            </div>
+
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<BarChart3 size={20} />} title="Overall Statistics" />
+
+            <div className="space-y-5 flex-1 flex flex-col justify-center">
+
+              <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <span className="text-gray-500 dark:text-gray-400">Registered Donors</span>
+                <span className="font-semibold">{stats?.totalDonors}</span>
+              </div>
+
+              <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <span className="text-gray-500 dark:text-gray-400">Available Donors</span>
+                <span className="font-semibold">{stats?.availableDonors}</span>
+              </div>
+
+              <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <span className="text-gray-500 dark:text-gray-400">Open Requests</span>
+                <span className="font-semibold">{stats?.openRequests}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">Completed Donations</span>
+                <span className="font-semibold">{stats?.completedDonations}</span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ================= DISTRIBUTION CHARTS ================= */}
+
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<BarChart3 size={20} />} title="Blood Group Distribution" />
+
+            {stats?.bloodGroupDistribution?.length ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={stats.bloodGroupDistribution}
+                  layout="vertical"
+                  margin={{ left: 10, right: 10 }}
                 >
-                  {stats.availabilityDistribution.map((entry: any) => (
-                    <Cell
-                      key={entry.status}
-                      fill={AVAILABILITY_COLORS[entry.status] ?? "#6b7280"}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-400 dark:text-gray-500">No availability data available yet.</p>
-            </div>
-          )}
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis type="category" dataKey="group" width={50} />
+                  <Tooltip cursor={false} />
+                  <Bar
+                    dataKey="count"
+                    fill="#dc2626"
+                    radius={[0, 6, 6, 0]}
+                    activeBar={{ fill: "#b91c1c" }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-gray-400 dark:text-gray-500">No donor data available yet.</p>
+              </div>
+            )}
+
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
+
+            <SectionHeading icon={<PieChartIcon size={20} />} title="Availability Distribution" />
+
+            {stats?.availabilityDistribution?.length ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={stats.availabilityDistribution}
+                    dataKey="count"
+                    nameKey="status"
+                    innerRadius={60}
+                    outerRadius={95}
+                    paddingAngle={2}
+                  >
+                    {stats.availabilityDistribution.map((entry: any) => (
+                      <Cell
+                        key={entry.status}
+                        fill={AVAILABILITY_COLORS[entry.status] ?? "#6b7280"}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-gray-400 dark:text-gray-500">No availability data available yet.</p>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* ================= DID YOU KNOW — FACTS & TIPS ================= */}
+
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8">
+
+          <SectionHeading icon={<Lightbulb size={20} />} title="Awareness Corner" />
+
+          <div className="bg-red-50 dark:bg-red-950 rounded-xl p-5 sm:p-6 min-h-[80px] flex items-center">
+            <p
+              className="text-gray-700 dark:text-gray-200 text-sm sm:text-base leading-relaxed animate-[fadeIn_0.5s_ease-in-out]"
+            >
+              {fact}
+            </p>
+          </div>
 
         </div>
 
       </div>
-
-      {/* ================= DID YOU KNOW — FACTS & TIPS ================= */}
-
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8">
-
-        <SectionHeading icon={<Lightbulb size={20} />} title="Awareness Corner" />
-
-        <div className="bg-red-50 dark:bg-red-950 rounded-xl p-5 sm:p-6 min-h-[80px] flex items-center">
-          <p
-            className="text-gray-700 dark:text-gray-200 text-sm sm:text-base leading-relaxed animate-[fadeIn_0.5s_ease-in-out]"
-          >
-            {fact}
-          </p>
-        </div>
-
-      </div>
-
-    </div>
+    </>
   );
 }
 

@@ -179,7 +179,7 @@ function LoginPage() {
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row lg:items-center">
 
         {/* Left hero text (desktop only) */}
-        <div className="hidden lg:flex flex-col justify-center flex-1 pl-16 pr-28 max-w-2xl -translate-y-36">
+        <div className="hidden lg:flex flex-col justify-center flex-1 pl-16 pr-28 max-w-2xl -translate-y-34">
           <h2 className="text-4xl font-semibold leading-tight text-white mb-5">
             Together, we bridge donors
             <br />
@@ -192,7 +192,7 @@ function LoginPage() {
         </div>
 
         {/* Right auth card */}
-        <div className="flex-1 flex items-center justify-end px-5 py-24 lg:py-0 lg:pr-44">
+        <div className="flex-1 flex items-center justify-end px-5 py-24 lg:py-0 lg:pr-46">
 
           <form
             onSubmit={handleLogin}

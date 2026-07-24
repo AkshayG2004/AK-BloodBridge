@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import BloodRequestCard from "../../components/Cards/BloodRequestCard";
 import {
   getBloodRequests,
@@ -61,58 +62,64 @@ function RequestsPage() {
   }
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>Requests | AK BloodBridge</title>
+      </Helmet>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          Blood Requests
-        </h1>
+      <div>
 
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Help save lives by accepting a request.
-        </p>
-      </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">
+            Blood Requests
+          </h1>
 
-      {requests.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-10 text-center">
-          <h2 className="text-2xl font-bold">
-            No Blood Requests Available
-          </h2>
-
-          <p className="text-gray-500 dark:text-gray-400 mt-3">
-            There are currently no active blood requests near you.
-            Please check back later.
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            Help save lives by accepting a request.
           </p>
         </div>
-      ) : (
-        <>
-          <div className="grid lg:grid-cols-2 gap-6">
-            {requests.map((request) => (
-              <BloodRequestCard
-                key={request._id}
-                request={request}
-                onAccept={handleAccept}
+
+        {requests.length === 0 ? (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-10 text-center">
+            <h2 className="text-2xl font-bold">
+              No Blood Requests Available
+            </h2>
+
+            <p className="text-gray-500 dark:text-gray-400 mt-3">
+              There are currently no active blood requests near you.
+              Please check back later.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid lg:grid-cols-2 gap-6">
+              {requests.map((request) => (
+                <BloodRequestCard
+                  key={request._id}
+                  request={request}
+                  onAccept={handleAccept}
+                />
+              ))}
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
+                bordered={false}
               />
-            ))}
-          </div>
+            </div>
+          </>
+        )}
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
-            <Pagination
-              currentPage={page}
-              totalItems={total}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setPage(1);
-              }}
-              bordered={false}
-            />
-          </div>
-        </>
-      )}
-
-    </div>
+      </div>
+    </>
   );
 }
 

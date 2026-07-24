@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import MyRequestCard from "../../components/Cards/MyRequestCard";
 import { getMyRequests } from "../../services/requestService";
 import EmptyState from "../../components/Cards/EmptyState";
@@ -42,59 +43,65 @@ function MyRequestsPage() {
     );
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>My Requests | AK BloodBridge</title>
+      </Helmet>
 
-      <div className="mb-8">
+      <div>
 
-        <h1 className="text-3xl font-bold">
-          My Requests
-        </h1>
+        <div className="mb-8">
 
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Track every blood request you've created.
-        </p>
+          <h1 className="text-3xl font-bold">
+            My Requests
+          </h1>
+
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Track every blood request you've created.
+          </p>
+
+        </div>
+
+        {requests.length === 0 ? (
+
+          <EmptyState
+            title="No Requests Yet"
+            subtitle="Create a blood request whenever you need help."
+          />
+
+        ) : (
+
+          <>
+            <div className="grid lg:grid-cols-2 gap-6">
+
+              {requests.map((request) => (
+                <MyRequestCard
+                  key={request._id}
+                  request={request}
+                />
+              ))}
+
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
+                bordered={false}
+              />
+            </div>
+          </>
+
+        )}
 
       </div>
-
-      {requests.length === 0 ? (
-
-        <EmptyState
-          title="No Requests Yet"
-          subtitle="Create a blood request whenever you need help."
-        />
-
-      ) : (
-
-        <>
-          <div className="grid lg:grid-cols-2 gap-6">
-
-            {requests.map((request) => (
-              <MyRequestCard
-                key={request._id}
-                request={request}
-              />
-            ))}
-
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
-            <Pagination
-              currentPage={page}
-              totalItems={total}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setPage(1);
-              }}
-              bordered={false}
-            />
-          </div>
-        </>
-
-      )}
-
-    </div>
+    </>
   );
 }
 

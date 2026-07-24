@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 
 import DonationCard from "../../components/Cards/DonationCard";
 
@@ -64,54 +65,60 @@ function DonationsPage() {
     );
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>My Donations | AK BloodBridge</title>
+      </Helmet>
 
-      <SectionTitle
-        title="My Donations"
-        subtitle="Blood requests you've accepted."
-      />
+      <div>
 
-      {requests.length === 0 ? (
-
-        <EmptyState
-          title="No Donations Yet"
-          subtitle="Accept a blood request to start saving lives."
+        <SectionTitle
+          title="My Donations"
+          subtitle="Blood requests you've accepted."
         />
 
-      ) : (
+        {requests.length === 0 ? (
 
-        <>
-          <div className="grid xl:grid-cols-2 gap-8">
+          <EmptyState
+            title="No Donations Yet"
+            subtitle="Accept a blood request to start saving lives."
+          />
 
-            {requests.map((request) => (
+        ) : (
 
-              <DonationCard
-                key={request._id}
-                request={request}
+          <>
+            <div className="grid xl:grid-cols-2 gap-8">
+
+              {requests.map((request) => (
+
+                <DonationCard
+                  key={request._id}
+                  request={request}
+                />
+
+              ))}
+
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
+                bordered={false}
               />
+            </div>
+          </>
 
-            ))}
+        )}
 
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
-            <Pagination
-              currentPage={page}
-              totalItems={total}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setPage(1);
-              }}
-              bordered={false}
-            />
-          </div>
-        </>
-
-      )}
-
-    </div>
+      </div>
+    </>
   );
 }
 

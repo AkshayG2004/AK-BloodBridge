@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 
 import {
   getAllRequests,
@@ -109,147 +110,153 @@ function ManageRequestsPage() {
   }
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>Manage Requests | AK BloodBridge</title>
+      </Helmet>
 
-      <SectionTitle
-        title="Manage Blood Requests"
-        subtitle="View, inspect and manage all blood requests."
-      />
+      <div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow overflow-x-auto">
-
-        <table className="w-full">
-
-          <thead className="bg-red-600 text-white">
-
-            <tr>
-
-              <th className="p-4 text-left">
-                Requester
-              </th>
-
-              <th className="p-4 text-left">
-                Blood Group
-              </th>
-
-              <th className="p-4 text-left">
-                Hospital
-              </th>
-
-              <th className="p-4 text-left">
-                City
-              </th>
-
-              <th className="p-4 text-left">
-                Urgency
-              </th>
-
-              <th className="p-4 text-left">
-                Status
-              </th>
-
-              <th className="p-4 text-center">
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {requests.length === 0 ? (
-
-              <tr>
-                <td
-                  colSpan={7}
-                  className="text-center py-12 text-gray-500 dark:text-gray-400"
-                >
-                  No requests found.
-                </td>
-              </tr>
-
-            ) : (
-
-              requests.map((request) => (
-
-              <tr
-                key={request._id}
-                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.requester?.name}
-                </td>
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.bloodGroup}
-                </td>
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.hospitalName}
-                </td>
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.hospitalCity}
-                </td>
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.urgency}
-                </td>
-
-                <td className="p-4 text-gray-800 dark:text-gray-200">
-                  {request.status}
-                </td>
-
-                <td className="p-4 text-center space-x-2">
-
-                  <button
-                    onClick={() => setSelectedRequest(request)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                  >
-                    View
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(request._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                  >
-                    Delete
-                  </button>
-
-                </td>
-
-              </tr>
-
-              ))
-
-            )}
-
-          </tbody>
-
-        </table>
-
-        <Pagination
-          currentPage={page}
-          totalItems={total}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(1);
-          }}
+        <SectionTitle
+          title="Manage Blood Requests"
+          subtitle="View, inspect and manage all blood requests."
         />
 
-       </div>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow overflow-x-auto">
 
-      <RequestDetailsModal
-        request={selectedRequest}
-        onClose={() => setSelectedRequest(null)}
-        onUpdated={loadRequests}
-      />
+          <table className="w-full">
 
-    </div>
+            <thead className="bg-red-600 text-white">
+
+              <tr>
+
+                <th className="p-4 text-left">
+                  Requester
+                </th>
+
+                <th className="p-4 text-left">
+                  Blood Group
+                </th>
+
+                <th className="p-4 text-left">
+                  Hospital
+                </th>
+
+                <th className="p-4 text-left">
+                  City
+                </th>
+
+                <th className="p-4 text-left">
+                  Urgency
+                </th>
+
+                <th className="p-4 text-left">
+                  Status
+                </th>
+
+                <th className="p-4 text-center">
+                  Actions
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {requests.length === 0 ? (
+
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="text-center py-12 text-gray-500 dark:text-gray-400"
+                  >
+                    No requests found.
+                  </td>
+                </tr>
+
+              ) : (
+
+                requests.map((request) => (
+
+                <tr
+                  key={request._id}
+                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.requester?.name}
+                  </td>
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.bloodGroup}
+                  </td>
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.hospitalName}
+                  </td>
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.hospitalCity}
+                  </td>
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.urgency}
+                  </td>
+
+                  <td className="p-4 text-gray-800 dark:text-gray-200">
+                    {request.status}
+                  </td>
+
+                  <td className="p-4 text-center space-x-2">
+
+                    <button
+                      onClick={() => setSelectedRequest(request)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    >
+                      View
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(request._id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                    >
+                      Delete
+                    </button>
+
+                  </td>
+
+                </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </table>
+
+          <Pagination
+            currentPage={page}
+            totalItems={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
+
+         </div>
+
+        <RequestDetailsModal
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          onUpdated={loadRequests}
+        />
+
+      </div>
+    </>
   );
 }
 
