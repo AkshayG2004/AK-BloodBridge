@@ -5,8 +5,16 @@ export const getDashboardStats = async () => {
   return res.data;
 };
 
-export const getAllUsers = async () => {
-  const res = await api.get("/admin/users");
+interface GetUsersParams {
+  page: number;
+  limit: number;
+  bloodGroup?: string;
+  availabilityStatus?: string;
+  city?: string;
+}
+
+export const getAllUsers = async (params: GetUsersParams) => {
+  const res = await api.get("/admin/users", { params });
   return res.data;
 };
 
@@ -15,8 +23,13 @@ export const deleteUser = async (id: string) => {
   return res.data;
 };
 
-export const getAllRequests = async () => {
-  const res = await api.get("/admin/requests");
+interface GetRequestsParams {
+  page: number;
+  limit: number;
+}
+
+export const getAllRequests = async (params: GetRequestsParams) => {
+  const res = await api.get("/admin/requests", { params });
   return res.data;
 };
 

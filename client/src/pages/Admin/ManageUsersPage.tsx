@@ -6,6 +6,7 @@ import {
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import SectionTitle from "../../components/Cards/SectionTitle";
+import Pagination from "../../components/Pagination/Pagination";
 
 interface User {
   _id: string;
@@ -28,7 +29,12 @@ interface User {
 
 function ManageUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
+  const [cities, setCities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const [bloodFilter, setBloodFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -36,12 +42,25 @@ function ManageUsersPage() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, bloodFilter, statusFilter, cityFilter]);
 
   const loadUsers = async () => {
     try {
-      const res = await getAllUsers();
+      setLoading(true);
+
+      const res = await getAllUsers({
+        page,
+        limit: pageSize,
+        bloodGroup: bloodFilter,
+        availabilityStatus: statusFilter,
+        city: cityFilter,
+      });
+
       setUsers(res.users);
+      setTotal(res.total);
+      setCities(["All", ...(res.cities ?? [])]);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -49,7 +68,15 @@ function ManageUsersPage() {
     }
   };
 
- const handleDelete = async (id: string) => {
+  const handleFilterChange = (
+    setter: (value: string) => void,
+    value: string
+  ) => {
+    setter(value);
+    setPage(1);
+  };
+
+  const handleDelete = async (id: string) => {
 
   const result = await Swal.fire({
     title: "Delete User?",
@@ -85,41 +112,7 @@ function ManageUsersPage() {
 
 };
 
-  const cities = [
-    "All",
-    ...Array.from(
-      new Set(
-        users
-          .map((user) => user.city)
-          .filter(Boolean)
-      )
-    ).sort(),
-  ];
-
-  const filteredUsers = users
-  .filter((user) => {
-    const bloodMatch =
-      bloodFilter === "All" ||
-      user.bloodGroup === bloodFilter;
-
-    const statusMatch =
-    statusFilter === "All" ||
-    user.availabilityStatus === statusFilter;
-
-  const cityMatch =
-    cityFilter === "All" ||
-    user.city === cityFilter;
-
-  return bloodMatch && statusMatch && cityMatch;
-  })
-  .sort((a, b) => {
-    const idA = Number(a.bloodBridgeId.replace(/\D/g, ""));
-    const idB = Number(b.bloodBridgeId.replace(/\D/g, ""));
-
-    return idA - idB;
-  });
-
-  if (loading) {
+  if (loading && users.length === 0) {
     return (
       <div className="text-center py-20 text-xl text-gray-800 dark:text-gray-100">
         Loading users...
@@ -131,18 +124,18 @@ function ManageUsersPage() {
     <div>
 
 
-    <div className="flex items-end justify-between mb-5">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-5">
 
-        {/* Left */}
+      {/* Left */}
 
-        <SectionTitle
-          title="Manage Users"
-          subtitle="View and manage registered BloodBridge users."
-        />
+      <SectionTitle
+        title="Manage Users"
+        subtitle="View and manage registered BloodBridge users."
+      />
 
-        {/* Right */}
+      {/* Right */}
 
-        <div className="flex items-end gap-2">
+      <div className="flex flex-wrap items-end gap-2">
 
           {/* Blood */}
 
@@ -156,18 +149,18 @@ function ManageUsersPage() {
 
               <select
                 value={bloodFilter}
-                onChange={(e) => setBloodFilter(e.target.value)}
+                onChange={(e) => handleFilterChange(setBloodFilter, e.target.value)}
                 className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 pr-9 text-sm appearance-none focus:outline-none focus:border-red-500"
               >
-                <option value="All">All</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
+                <option value="All" className="dark:bg-gray-800 dark:text-gray-200">All</option>
+                <option value="A+" className="dark:bg-gray-800 dark:text-gray-200">A+</option>
+                <option value="A-" className="dark:bg-gray-800 dark:text-gray-200">A-</option>
+                <option value="B+" className="dark:bg-gray-800 dark:text-gray-200">B+</option>
+                <option value="B-" className="dark:bg-gray-800 dark:text-gray-200">B-</option>
+                <option value="AB+" className="dark:bg-gray-800 dark:text-gray-200">AB+</option>
+                <option value="AB-" className="dark:bg-gray-800 dark:text-gray-200">AB-</option>
+                <option value="O+" className="dark:bg-gray-800 dark:text-gray-200">O+</option>
+                <option value="O-" className="dark:bg-gray-800 dark:text-gray-200">O-</option>
               </select>
 
               <svg
@@ -200,13 +193,13 @@ function ManageUsersPage() {
 
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
                 className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 pr-9 text-sm appearance-none focus:outline-none focus:border-red-500"
               >
-                <option value="All">All</option>
-                <option value="Available">Available</option>
-                <option value="Busy">Busy</option>
-                <option value="Unavailable">Unavailable</option>
+                <option value="All" className="dark:bg-gray-800 dark:text-gray-200">All</option>
+                <option value="Available" className="dark:bg-gray-800 dark:text-gray-200">Available</option>
+                <option value="Busy" className="dark:bg-gray-800 dark:text-gray-200">Busy</option>
+                <option value="Unavailable" className="dark:bg-gray-800 dark:text-gray-200">Unavailable</option>
               </select>
 
               <svg
@@ -237,11 +230,11 @@ function ManageUsersPage() {
 
             <select
               value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(setCityFilter, e.target.value)}
               className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 pr-9 text-sm appearance-none focus:outline-none focus:border-red-500"
             >
               {cities.map((city) => (
-                <option key={city} value={city}>
+                <option key={city} value={city} className="dark:bg-gray-800 dark:text-gray-200">
                   {city}
                 </option>
               ))}
@@ -272,7 +265,7 @@ function ManageUsersPage() {
             </span>
 
             <span className="font-bold text-red-600 dark:text-red-400">
-              {filteredUsers.length}
+              {total}
             </span>
 
           </div>
@@ -290,6 +283,7 @@ function ManageUsersPage() {
                 setBloodFilter("All");
                 setStatusFilter("All");
                 setCityFilter("All");
+                setPage(1);
               }}
               className="h-9 px-4 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 text-sm hover:bg-red-100 dark:hover:bg-red-900 transition"
             >
@@ -352,7 +346,7 @@ function ManageUsersPage() {
 
           <tbody>
 
-            {filteredUsers.length === 0 ? (
+            {users.length === 0 ? (
 
               <tr>
 
@@ -367,7 +361,7 @@ function ManageUsersPage() {
 
             ) : (
 
-              filteredUsers.map((user) => (
+              users.map((user) => (
 
                 <tr
                   key={user._id}
@@ -461,6 +455,17 @@ function ManageUsersPage() {
           </tbody>
 
         </table>
+
+        <Pagination
+          currentPage={page}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
 
       </div>
 

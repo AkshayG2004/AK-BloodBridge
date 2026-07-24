@@ -6,9 +6,9 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import factRoutes from "./routes/factRoutes";
+import contactRoutes from "./routes/contactRoutes";
 
 const app = express();
-console.log("APP FILE LOADED");
 
 app.use(
   cors({
@@ -42,5 +42,8 @@ app.use("/api/facts", factRoutes);
 
 // Admin Routes
 app.use("/api/admin", adminRoutes);
+
+// Contact Routes
+app.use("/api/contact", contactRoutes);
 
 export default app;

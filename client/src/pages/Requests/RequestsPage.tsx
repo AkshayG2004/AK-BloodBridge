@@ -5,21 +5,31 @@ import {
   acceptBloodRequest,
 } from "../../services/requestService";
 import toast from "react-hot-toast";
+import Pagination from "../../components/Pagination/Pagination";
 
 import type { BloodRequest } from "../../types/bloodRequest";
 
 function RequestsPage() {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize]);
 
   const fetchRequests = async () => {
     try {
-      const res = await getBloodRequests();
+      setLoading(true);
+
+      const res = await getBloodRequests({ page, limit: pageSize });
+
       setRequests(res.requests);
+      setTotal(res.total);
     } catch (err) {
       console.error(err);
     } finally {
@@ -42,7 +52,7 @@ function RequestsPage() {
     }
   };
 
-  if (loading) {
+  if (loading && requests.length === 0) {
     return (
       <div className="flex justify-center items-center h-[50vh] text-gray-800 dark:text-gray-100">
           Loading blood requests...
@@ -75,15 +85,31 @@ function RequestsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {requests.map((request) => (
-            <BloodRequestCard
-              key={request._id}
-              request={request}
-              onAccept={handleAccept}
+        <>
+          <div className="grid lg:grid-cols-2 gap-6">
+            {requests.map((request) => (
+              <BloodRequestCard
+                key={request._id}
+                request={request}
+                onAccept={handleAccept}
+              />
+            ))}
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
+            <Pagination
+              currentPage={page}
+              totalItems={total}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+              bordered={false}
             />
-          ))}
-        </div>
+          </div>
+        </>
       )}
 
     </div>

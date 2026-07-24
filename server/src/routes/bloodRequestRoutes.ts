@@ -12,8 +12,6 @@ import authMiddleware from "../middleware/authMiddleware";
 
 const router = Router();
 
-console.log("BloodRequestRoutes Loaded");
-
 // ==========================
 // Protected Routes
 // ==========================
@@ -31,7 +29,6 @@ router.get("/accepted", authMiddleware, getAcceptedRequests);
 // Accept Blood Request
 router.put("/:id/accept", authMiddleware, acceptBloodRequest);
 
-console.log("About to register confirm route");
 
 // Requester confirms a donor
 router.patch(
@@ -39,8 +36,6 @@ router.patch(
   authMiddleware,
   confirmDonation
 );
-
-console.log("Confirm route registered");
 
 // Requester rejects a donor
 router.patch(

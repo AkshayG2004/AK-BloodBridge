@@ -6,6 +6,10 @@ import {
   registerUser,
 } from "../../services/authService";
 import toast from "react-hot-toast";
+import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+
+// Save your image at: client/src/assets/images/auth-bg1.png
+import authBg from "../../assets/images/auth-bg1.png";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -72,157 +76,188 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <>
 
-      {/* ===== Left Brand Panel ===== */}
-      <div className="hidden lg:flex w-1/2 bg-red-600 flex-col justify-between p-12 text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-black">
 
-        <div className="text-3xl font-bold tracking-tight">
-          BloodBridge
-        </div>
+      {/* ===== Background Image ===== */}
+      <img
+        src={authBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-black/25" />
 
-        <div>
-          <h2 className="text-4xl font-bold leading-tight mb-4">
+      {/* ===== Logo ===== */}
+      <div className="absolute top-8 left-6 sm:top-10 lg:left-16 z-20 flex items-center gap-2">
+
+        <span className="text-3xl sm:text-4xl font-bold tracking-tight">
+          <span className="text-red-600">Blood</span>
+          <span className="text-white">Bridge</span>
+        </span>
+      </div>
+
+      {/* ===== Content ===== */}
+      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row lg:items-center">
+
+        {/* Left hero text (desktop only) */}
+        <div className="hidden lg:flex flex-col justify-center flex-1 pl-16 pr-28 max-w-2xl -translate-y-36">
+          <h2 className="text-4xl font-semibold leading-tight text-white mb-5">
             Join a network
             <br />
-            that saves lives.
+            <span className="text-red-600">that saves lives.</span>
           </h2>
-          <p className="text-red-100 max-w-md">
+          <p className="text-[15px] text-gray-400 max-w-md">
             Register as a donor today and become part of a community
+            <br/>
             ready to respond when it matters most.
           </p>
         </div>
 
-        <div className="text-sm text-red-200">
-          &copy; {new Date().getFullYear()} BloodBridge. All rights reserved.
+        {/* Right auth card */}
+        <div className="flex-1 flex items-center justify-end px-5 py-24 lg:py-0 lg:pr-44">
+
+          <form
+            onSubmit={handleRegister}
+            className="w-full max-w-sm bg-neutral-900/70 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-10"
+          >
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+              Create account
+            </h1>
+            <p className="text-sm text-gray-400 mb-2">
+              Fill in your details to get started.
+            </p>
+            <div className="w-10 h-1 bg-red-600 rounded-full mb-8" />
+
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Full Name
+            </label>
+            <div className="relative mb-5">
+              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
+              <input
+                type="text"
+                placeholder="Enter your name"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-600 transition"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Email
+            </label>
+            <div className="relative mb-5">
+              <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
+              <input
+                type="email"
+                placeholder="Enter your Email ID"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-600 transition"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Password
+            </label>
+            <div className="relative mb-6">
+              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-11 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-600 transition"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-red-700 to-red-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition shadow-lg shadow-red-900/30 disabled:opacity-50"
+            >
+              {loading ? "Sending OTP..." : "Register"}
+            </button>
+
+            <p className="text-center mt-6 text-sm text-gray-400">
+
+              Already have an account?{" "}
+
+              <Link
+                to="/"
+                className="text-white font-semibold hover:text-red-500 transition"
+              >
+                Sign in
+              </Link>
+
+            </p>
+
+          </form>
+
         </div>
 
       </div>
 
-      {/* ===== Right Form Panel ===== */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 bg-white">
+      {/* ===== Footer ===== */}
+      <div className="absolute bottom-10 left-0 right-0 z-20 px-6 text-xs text-white text-center sm:left-16 sm:right-auto sm:w-auto sm:text-left">
+        &copy; {new Date().getFullYear()} BloodBridge. All rights reserved.
+      </div>
 
-        <form
-          onSubmit={handleRegister}
-          className="w-full max-w-sm"
-        >
+    </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Create account
-          </h1>
-          <p className="text-gray-500 mb-8">
-            Fill in your details to get started.
+    {showOTPModal && (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+            Verify your email
+          </h2>
+
+          <p className="text-gray-400 text-sm mb-6">
+            We sent a 6-digit code to{" "}
+            <span className="font-semibold text-gray-200">{email}</span>
           </p>
 
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
           <input
             type="text"
-            placeholder="Enter your name"
-            className="w-full border-b-2 border-gray-200 py-2.5 mb-6 text-sm focus:outline-none focus:border-red-600 transition"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="Enter your email ID"
-            className="w-full border-b-2 border-gray-200 py-2.5 mb-6 text-sm focus:outline-none focus:border-red-600 transition"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <div className="flex items-center justify-between mb-1 leading-none">
-            <label className="text-sm font-medium text-gray-700 leading-none">
-              Password
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 hover:text-red-600 transition leading-none"
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
-            className="w-full border-b-2 border-gray-200 py-2.5 mb-8 text-sm focus:outline-none focus:border-red-600 transition"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="000000"
+            value={otp}
+            maxLength={6}
+            onChange={(e) => setOtp(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 text-center tracking-[6px] sm:tracking-[10px] text-xl sm:text-2xl font-semibold text-white mb-6 focus:outline-none focus:border-red-600 transition"
           />
 
           <button
-            type="submit"
+            onClick={handleVerifyOTP}
             disabled={loading}
-            className="w-full bg-gray-900 text-white py-3 rounded-md font-medium hover:bg-red-600 transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-red-700 to-red-500 text-white py-3 rounded-xl font-medium hover:opacity-90 transition disabled:opacity-50"
           >
-            {loading ? "Sending OTP..." : "Register"}
+            {loading ? "Verifying..." : "Verify"}
           </button>
 
-          <p className="text-center mt-8 text-sm text-gray-500">
-            Already have an account?{" "}
-            <Link
-              to="/"
-              className="text-gray-900 font-semibold hover:text-red-600 transition"
-            >
-              Sign in
-            </Link>
-          </p>
+          <button
+            onClick={() => {
+              setOtp("");
+              setShowOTPModal(false);
+            }}
+            className="w-full mt-3 text-sm text-gray-400 hover:text-red-500 transition"
+          >
+            Cancel
+          </button>
 
-        </form>
-
-      </div>
-
-      {showOTPModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm">
-
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Verify your email
-            </h2>
-
-            <p className="text-gray-500 text-sm mb-6">
-              We sent a 6-digit code to{" "}
-              <span className="font-semibold text-gray-800">{email}</span>
-            </p>
-
-            <input
-              type="text"
-              placeholder="000000"
-              value={otp}
-              maxLength={6}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full border-b-2 border-gray-200 py-3 text-center tracking-[10px] text-2xl font-semibold mb-6 focus:outline-none focus:border-red-600 transition"
-            />
-
-            <button
-              onClick={handleVerifyOTP}
-              disabled={loading}
-              className="w-full bg-gray-900 text-white py-3 rounded-md font-medium hover:bg-red-600 transition disabled:opacity-50"
-            >
-              {loading ? "Verifying..." : "Verify"}
-            </button>
-
-            <button
-              onClick={() => {
-                setOtp("");
-                setShowOTPModal(false);
-              }}
-              className="w-full mt-3 text-sm text-gray-500 hover:text-gray-900 transition"
-            >
-              Cancel
-            </button>
-
-          </div>
         </div>
-      )}
+      </div>
+    )}
 
-    </div>
+    </>
   );
 }
 

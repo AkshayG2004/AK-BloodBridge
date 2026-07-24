@@ -10,7 +10,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 function ProfilePage() {
-  
 
   const { refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -96,14 +95,14 @@ function ProfilePage() {
     }
   };
 
-  const handleChange: React.ChangeEventHandler<
-    HTMLInputElement | HTMLSelectElement
-  > = (e) => {
-    setForm({
-      ...form,
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) {
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
-  };
+    }));
+  }
 
   const handleSave = async () => {
     try {
@@ -182,6 +181,10 @@ function ProfilePage() {
 
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8">
 
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
+          Please make sure every detail below is entered correctly and carefully.
+        </p>
+
         <div className="grid md:grid-cols-2 gap-6">
 
           <Input
@@ -203,9 +206,9 @@ function ProfilePage() {
           />
 
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-sm font-medium mb-2">
               Blood Group
-            </p>
+            </label>
 
             <div className="relative">
 
@@ -242,28 +245,6 @@ function ProfilePage() {
 
             </div>
           </div>
-
-          <Input
-            label="Phone"
-            name="phone"
-            value={form.phone}
-            onChange={(e) => handleChange(e)}
-          />
-
-          <Input
-            label="City"
-            name="city"
-            value={form.city}
-            onChange={(e) => handleChange(e)}
-          />
-
-          <Input
-            label="Weight (kg)"
-            name="weight"
-            type="number"
-            value={form.weight}
-            onChange={(e) => handleChange(e)}
-          />
 
           <div>
             <label className="block text-sm font-medium mb-2">
@@ -303,10 +284,32 @@ function ProfilePage() {
 
           </div>
 
+          <Input
+            label="Phone"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+          />
+
+          <Input
+            label="Weight (kg)"
+            name="weight"
+            type="number"
+            value={form.weight}
+            onChange={handleChange}
+          />
+
+          <Input
+            label="City"
+            name="city"
+            value={form.city}
+            onChange={handleChange}
+          />
+
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-sm font-medium mb-2">
               Gender
-            </p>
+            </label>
 
             <div className="relative">
 
@@ -340,9 +343,9 @@ function ProfilePage() {
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-sm font-medium mb-2">
               Availability
-            </p>
+            </label>
 
             {form.availabilityStatus === "Unavailable" ? (
               <>

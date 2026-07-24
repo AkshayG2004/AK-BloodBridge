@@ -65,7 +65,11 @@ export const getBloodRequests = async (
   res: Response
 ) => {
   try {
-    const requests = await BloodRequest.find({
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.max(1, Number(req.query.limit) || 25);
+
+    const filter: any = {
       status: "Open",
       requiredBefore: { $gte: new Date() },
       requester: { $ne: req.userId },
@@ -75,14 +79,27 @@ export const getBloodRequests = async (
           "$unitsRequired",
         ],
       },
-    })
-      .populate("requester", "bloodBridgeId name phone city")
-      .sort({ createdAt: -1 });
+    };
+
+    const [requests, total] = await Promise.all([
+
+      BloodRequest.find(filter)
+        .populate("requester", "bloodBridgeId name phone city")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+
+      BloodRequest.countDocuments(filter),
+
+    ]);
 
     res.status(200).json({
       success: true,
       count: requests.length,
       requests,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     });
 
   } catch (error) {
@@ -197,19 +214,34 @@ export const getMyBloodRequests = async (
   res: Response
 ) => {
   try {
-    const requests = await BloodRequest.find({
-      requester: req.userId,
-    })
-      .populate(
-        "acceptedDonors.donor",
-        "bloodBridgeId name phone city"
-      )
-      .sort({ createdAt: -1 });
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.max(1, Number(req.query.limit) || 25);
+
+    const filter: any = { requester: req.userId };
+
+    const [requests, total] = await Promise.all([
+
+      BloodRequest.find(filter)
+        .populate(
+          "acceptedDonors.donor",
+          "bloodBridgeId name phone city"
+        )
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+
+      BloodRequest.countDocuments(filter),
+
+    ]);
 
     res.status(200).json({
       success: true,
       count: requests.length,
       requests,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     });
 
   } catch (error) {
@@ -228,20 +260,35 @@ export const getAcceptedRequests = async (
   res: Response
 ) => {
   try {
-    const requests = await BloodRequest.find({
-      "acceptedDonors.donor": req.userId,
-    })
-    .populate("requester", "bloodBridgeId name phone city")
-    .populate(
-      "acceptedDonors.donor",
-      "bloodBridgeId name phone city"
-    )
-    .sort({ createdAt: -1 });
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.max(1, Number(req.query.limit) || 25);
+
+    const filter: any = { "acceptedDonors.donor": req.userId };
+
+    const [requests, total] = await Promise.all([
+
+      BloodRequest.find(filter)
+        .populate("requester", "bloodBridgeId name phone city")
+        .populate(
+          "acceptedDonors.donor",
+          "bloodBridgeId name phone city"
+        )
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+
+      BloodRequest.countDocuments(filter),
+
+    ]);
 
     res.status(200).json({
       success: true,
       count: requests.length,
       requests,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     });
 
   } catch (error) {

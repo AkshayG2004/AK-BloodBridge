@@ -68,19 +68,19 @@ const handleSave = async () => {
 };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50">
 
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-8">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl w-full max-w-2xl p-8">
 
         <div className="flex justify-between items-center mb-8">
 
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             Blood Request Details
           </h2>
 
           <button
             onClick={onClose}
-            className="text-3xl font-bold text-gray-500 hover:text-red-600"
+            className="text-3xl font-bold text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500"
           >
             ×
           </button>
@@ -140,7 +140,7 @@ const handleSave = async () => {
 
           <div>
 
-            <p className="text-sm text-gray-500 mb-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Status
             </p>
 
@@ -150,12 +150,12 @@ const handleSave = async () => {
               className={`w-full rounded-xl px-4 py-3 border font-semibold outline-none transition
                 ${
                   status === "Open"
-                    ? "bg-blue-50 border-blue-300 text-blue-700"
+                    ? "bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-400"
                     : status === "Accepted"
-                    ? "bg-yellow-50 border-yellow-300 text-yellow-700"
+                    ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400"
                     : status === "Completed"
-                    ? "bg-green-50 border-green-300 text-green-700"
-                    : "bg-red-50 border-red-300 text-red-700"
+                    ? "bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-800 text-green-700 dark:text-green-400"
+                    : "bg-red-50 dark:bg-red-950 border-red-300 dark:border-red-800 text-red-700 dark:text-red-400"
                 }`}
             >
               <option value="Open">🟦 Open</option>
@@ -179,7 +179,7 @@ const handleSave = async () => {
 
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded-xl border"
+            className="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Close
           </button>
@@ -211,11 +211,11 @@ function Info({
   return (
     <div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {label}
       </p>
 
-      <p className="font-semibold mt-1">
+      <p className="font-semibold mt-1 text-gray-900 dark:text-gray-100">
         {value ?? "-"}
       </p>
 

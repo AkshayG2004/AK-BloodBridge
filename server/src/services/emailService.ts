@@ -1,9 +1,5 @@
 import nodemailer from "nodemailer";
 
-console.log("========== ENV CHECK ==========");
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded ✅" : "Missing ❌");
-
 const transporter = nodemailer.createTransport({
   service: "gmail",
 
@@ -70,6 +66,60 @@ export const sendOTPEmail = async (
 
   } catch (error) {
     console.error("========== NODEMAILER ERROR ==========");
+    console.error(error);
+    throw error;
+  }
+};
+
+export const sendContactEmail = async (
+  name: string,
+  email: string,
+  subject: string,
+  message: string
+) => {
+  try {
+    console.log("========== CONTACT EMAIL DEBUG ==========");
+    console.log("FROM (user):", email);
+    console.log("NAME:", name);
+    console.log("SUBJECT:", subject);
+
+    const info = await transporter.sendMail({
+      from: `"AK BloodBridge Contact" <${process.env.EMAIL_USER}>`,
+
+      to: process.env.EMAIL_USER, // sends to your own admin inbox
+
+      replyTo: email, // lets you hit "Reply" and respond directly to the user
+
+      subject: `[Contact Us] ${subject}`,
+
+      html: `
+        <div style="font-family:Arial;padding:20px;">
+          <h2 style="color:#dc2626;">
+            New Contact Us Message
+          </h2>
+
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+
+          <hr>
+
+          <p style="white-space:pre-line;">${message}</p>
+
+          <hr>
+
+          <small>
+            Sent via AK BloodBridge Contact Us form.
+          </small>
+        </div>
+      `,
+    });
+
+    console.log("========== CONTACT EMAIL SENT ==========");
+    console.log(info);
+
+  } catch (error) {
+    console.error("========== NODEMAILER ERROR (CONTACT) ==========");
     console.error(error);
     throw error;
   }

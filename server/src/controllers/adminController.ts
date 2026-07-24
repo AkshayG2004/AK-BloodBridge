@@ -7,30 +7,58 @@ import { AuthRequest } from "../middleware/authMiddleware";
 // Get All Users
 // ==========================
 export const getAllUsers = async (
-  req: AuthRequest,
-  res: Response
-) => {
-  try {
-    const users = await User.find()
-      .select("-password")
-      .sort({ createdAt: -1 });
+    req: AuthRequest,
+    res: Response
+  ) => {
+    try {
 
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      users,
-    });
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Number(req.query.limit) || 25);
 
-  } catch (error) {
-    console.error("========== GET ALL USERS ERROR ==========");
-    console.error(error);
+      const bloodGroup = req.query.bloodGroup as string | undefined;
+      const availabilityStatus = req.query.availabilityStatus as string | undefined;
+      const city = req.query.city as string | undefined;
 
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
+      const filter: any = {};
+
+      if (bloodGroup && bloodGroup !== "All") filter.bloodGroup = bloodGroup;
+      if (availabilityStatus && availabilityStatus !== "All") filter.availabilityStatus = availabilityStatus;
+      if (city && city !== "All") filter.city = city;
+
+      const [users, total, cities] = await Promise.all([
+
+        User.find(filter)
+          .select("-password")
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit),
+
+        User.countDocuments(filter),
+
+        User.distinct("city", { city: { $ne: null } }),
+
+      ]);
+
+      res.status(200).json({
+        success: true,
+        count: users.length,
+        users,
+        total,
+        page,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+        cities: cities.filter(Boolean).sort(),
+      });
+
+    } catch (error) {
+      console.error("========== GET ALL USERS ERROR ==========");
+      console.error(error);
+
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+      });
+    }
+  };
 
 // ==========================
 // Delete User
@@ -107,31 +135,46 @@ export const deleteUser = async (
 // Get All Blood Requests
 // ==========================
 export const getAllRequests = async (
-  req: AuthRequest,
-  res: Response
-) => {
-  try {
-    const requests = await BloodRequest.find()
-      .populate("requester", "bloodBridgeId name phone city")
-      .populate("acceptedDonors", "bloodBridgeId name phone city")
-      .sort({ createdAt: -1 });
+    req: AuthRequest,
+    res: Response
+  ) => {
+    try {
 
-    res.status(200).json({
-      success: true,
-      count: requests.length,
-      requests,
-    });
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Number(req.query.limit) || 25);
 
-  } catch (error) {
-    console.error("========== GET ALL REQUESTS ERROR ==========");
-    console.error(error);
+      const [requests, total] = await Promise.all([
 
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
+        BloodRequest.find()
+          .populate("requester", "bloodBridgeId name phone city")
+          .populate("acceptedDonors", "bloodBridgeId name phone city")
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit),
+
+        BloodRequest.countDocuments(),
+
+      ]);
+
+      res.status(200).json({
+        success: true,
+        count: requests.length,
+        requests,
+        total,
+        page,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      });
+
+    } catch (error) {
+      console.error("========== GET ALL REQUESTS ERROR ==========");
+      console.error(error);
+
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+      });
+    }
+  };
 
 // ==========================
 // Delete Blood Request

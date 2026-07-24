@@ -2,21 +2,31 @@ import { useEffect, useState } from "react";
 import MyRequestCard from "../../components/Cards/MyRequestCard";
 import { getMyRequests } from "../../services/requestService";
 import EmptyState from "../../components/Cards/EmptyState";
+import Pagination from "../../components/Pagination/Pagination";
 
 import type { BloodRequest } from "../../types/bloodRequest";
 
 function MyRequestsPage() {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize]);
 
   const loadRequests = async () => {
     try {
-      const res = await getMyRequests();
+      setLoading(true);
+
+      const res = await getMyRequests({ page, limit: pageSize });
+
       setRequests(res.requests);
+      setTotal(res.total);
     } catch (err) {
       console.error(err);
     } finally {
@@ -24,7 +34,7 @@ function MyRequestsPage() {
     }
   };
 
-  if (loading)
+  if (loading && requests.length === 0)
     return (
       <div className="text-center py-20 text-xl text-gray-800 dark:text-gray-100">
         Loading...
@@ -55,16 +65,32 @@ function MyRequestsPage() {
 
       ) : (
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <>
+          <div className="grid lg:grid-cols-2 gap-6">
 
-          {requests.map((request) => (
-            <MyRequestCard
-              key={request._id}
-              request={request}
+            {requests.map((request) => (
+              <MyRequestCard
+                key={request._id}
+                request={request}
+              />
+            ))}
+
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow mt-6">
+            <Pagination
+              currentPage={page}
+              totalItems={total}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+              bordered={false}
             />
-          ))}
-
-        </div>
+          </div>
+        </>
 
       )}
 

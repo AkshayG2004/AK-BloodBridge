@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   LayoutDashboard,
   Droplets,
@@ -8,7 +10,9 @@ import {
   PlusCircle,
   HeartHandshake,
   Sun,
-  Moon
+  Moon,
+  X,
+  Mail,
 } from "lucide-react";
 
 import { useTheme } from "../context/ThemeContext";
@@ -36,6 +40,8 @@ function MainLayout() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
 
@@ -68,6 +74,11 @@ function MainLayout() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const dashboardMenu = [
     {
@@ -103,19 +114,19 @@ function MainLayout() {
     },
   ];
 
-  const communityMenu = [
-    {
-      title: "Donors",
-      icon: <Users size={20} />,
-      path: "/donors",
-    },
-  ];
-
   const accountMenu = [
     {
       title: "Profile",
       icon: <User size={20} />,
       path: "/profile",
+    },
+  ];
+
+  const supportMenu = [
+    {
+      title: "Contact",
+      icon: <Mail size={20} />,
+      path: "/contact",
     },
   ];
 
@@ -150,7 +161,6 @@ function MainLayout() {
           item.path === "/requests" ||
           item.path === "/dashboard" ||
           item.path === "/admin/dashboard" ||
-          item.path === "/donors" ||
           item.path === "/profile" ||
           item.path === "/my-requests" ||
           item.path === "/donations" ||
@@ -177,15 +187,40 @@ function MainLayout() {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-950 overflow-hidden transition-colors">
 
+      {/* Mobile overlay — only rendered below lg, only when drawer is open */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        />
+      )}
+
       {/* Sidebar */}
 
-      <aside className="w-72 h-screen bg-gradient-to-b from-red-700 to-red-900 dark:from-red-950 dark:to-black text-white flex flex-col shadow-xl flex-shrink-0 transition-colors">
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-72 h-screen bg-gradient-to-b from-red-700 to-red-900 dark:from-red-950 dark:to-black text-white flex flex-col shadow-xl flex-shrink-0 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
 
         <div className="p-8 border-b border-red-500 dark:border-red-900">
 
-          <h1 className="text-3xl font-bold">
-            BloodBridge
-          </h1>
+          <div className="flex items-center justify-between">
+
+            <h1 className="text-3xl font-bold">
+              BloodBridge
+            </h1>
+
+            {/* Close button — mobile drawer only */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close menu"
+              className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 transition"
+            >
+              <X size={22} />
+            </button>
+
+          </div>
 
           <p className="text-red-200 dark:text-red-300 mt-2">
             Donate Blood. Save Lives.
@@ -239,22 +274,6 @@ function MainLayout() {
 
         </div>
 
-        {/* Community */}
-
-        <div className="mt-8">
-
-          <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
-            Community
-          </p>
-
-          <div className="space-y-2">
-
-            {renderMenu(communityMenu)}
-
-          </div>
-
-        </div>
-
         {/* Account */}
 
         <div className="mt-8">
@@ -270,6 +289,22 @@ function MainLayout() {
           </div>
 
         </div>
+
+        {/* Support */}
+
+          <div className="mt-8">
+
+            <p className="text-xs uppercase tracking-widest text-red-300 dark:text-red-400 mb-3 px-2">
+              Support
+            </p>
+
+            <div className="space-y-2">
+
+              {renderMenu(supportMenu)}
+
+            </div>
+
+          </div>
 
       </>
 
@@ -335,8 +370,8 @@ function MainLayout() {
       {/* Main Content */}
 
       <main className="flex-1 h-screen overflow-y-auto bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
-        <div className="p-8">
-          <Navbar />
+        <div className="p-4 sm:p-6 lg:p-8">
+          <Navbar onMenuClick={() => setSidebarOpen(true)} />
           <Outlet />
         </div>
       </main>

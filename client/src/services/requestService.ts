@@ -11,8 +11,13 @@ export const createBloodRequest = async (data: any) => {
 // ==========================
 // Get All Open Blood Requests
 // ==========================
-export const getBloodRequests = async () => {
-  const res = await api.get("/requests");
+interface PageParams {
+  page: number;
+  limit: number;
+}
+
+export const getBloodRequests = async (params: PageParams) => {
+  const res = await api.get("/requests", { params });
   return res.data;
 };
 
@@ -27,16 +32,16 @@ export const acceptBloodRequest = async (id: string) => {
 // ==========================
 // Get My Blood Requests
 // ==========================
-export const getMyRequests = async () => {
-  const res = await api.get("/requests/my");
+export const getMyRequests = async (params: PageParams) => {
+  const res = await api.get("/requests/my", { params });
   return res.data;
 };
 
 // ==========================
 // Get My Accepted Donations
 // ==========================
-export const getAcceptedRequests = async () => {
-  const res = await api.get("/requests/accepted");
+export const getAcceptedRequests = async (params: PageParams) => {
+  const res = await api.get("/requests/accepted", { params });
   return res.data;
 };
 

@@ -1,10 +1,13 @@
 import { Response } from "express";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
 import BloodRequest from "../models/BloodRequest";
 import { AuthRequest } from "../middleware/authMiddleware";
 
 const MS_IN_DAY = 1000 * 60 * 60 * 24;
 const ELIGIBILITY_GAP_DAYS = 90;
+
+// Excludes admins from every "user/donor" stat shown on the dashboard.
+const NON_ADMIN_FILTER = { role: { $ne: "admin" as const } };
 
 // ==========================
 // Dashboard Statistics
@@ -40,17 +43,20 @@ export const getDashboardStats = async (
       cityAgg,
     ] = await Promise.all([
 
-      User.countDocuments(),
+      User.countDocuments(NON_ADMIN_FILTER),
 
       User.countDocuments({
+        ...NON_ADMIN_FILTER,
         availabilityStatus: "Available",
       }),
 
       User.countDocuments({
+        ...NON_ADMIN_FILTER,
         city: user.city,
       }),
 
       User.countDocuments({
+        ...NON_ADMIN_FILTER,
         city: user.city,
         availabilityStatus: "Available",
       }),
@@ -67,24 +73,24 @@ export const getDashboardStats = async (
         requester: req.userId,
       }),
 
-      // NOTE: assumes BloodRequest has a "donor" field set when a
-      // donor fulfills a request. Update the field name below if
-      // your schema tracks this differently.
       BloodRequest.countDocuments({
         donor: req.userId,
         status: "Completed",
       }),
 
       User.aggregate([
+        { $match: NON_ADMIN_FILTER },
         { $group: { _id: "$bloodGroup", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
 
       User.aggregate([
+        { $match: NON_ADMIN_FILTER },
         { $group: { _id: "$availabilityStatus", count: { $sum: 1 } } },
       ]),
 
       User.aggregate([
+        { $match: NON_ADMIN_FILTER },
         { $group: { _id: "$city", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 5 },
@@ -130,50 +136,36 @@ export const getDashboardStats = async (
     res.status(200).json({
       success: true,
       stats: {
-
-        // ===== Network Statistics =====
         totalDonors,
         registeredCityDonors,
-
         availableDonors,
         availableCityDonors,
-
         openRequests,
         completedDonations,
-
-        // ===== User Details =====
         userName: user.name,
         bloodGroup: user.bloodGroup,
         city: user.city,
         weight: user.weight ?? null,
         availabilityStatus: user.availabilityStatus,
         lastDonationDate: user.lastDonationDate,
-
-        // ===== Personal Statistics =====
         myDonations,
         myRequests,
         requestsFulfilled,
         livesImpacted,
         eligibleAgainDate,
         isEligibleNow,
-
-        // ===== Charts =====
         bloodGroupDistribution,
         availabilityDistribution,
         cityRanking,
-
       },
     });
 
   } catch (error) {
-
     console.error("========== DASHBOARD ERROR ==========");
     console.error(error);
-
     res.status(500).json({
       success: false,
       message: "Server Error",
     });
-
   }
 };

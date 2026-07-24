@@ -16,8 +16,8 @@ import CreateRequestPage from "../pages/CreateRequest/CreateRequestPage";
 import RequestsPage from "../pages/Requests/RequestsPage";
 import MyRequestsPage from "../pages/MyRequests/MyRequestsPage";
 import DonationsPage from "../pages/Donations/DonationsPage";
-import DonorsPage from "../pages/Donors/DonorsPage";
 import ProfilePage from "../pages/Profile/ProfilePage";
+import ContactPage from "../pages/Contact/ContactPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -103,13 +103,13 @@ function AppRoutes() {
           />
 
           <Route
-            path="/donors"
-            element={<DonorsPage />}
+            path="/profile"
+            element={<ProfilePage />}
           />
 
           <Route
-            path="/profile"
-            element={<ProfilePage />}
+            path="/contact"
+            element={<ContactPage />}
           />
 
         </Route>

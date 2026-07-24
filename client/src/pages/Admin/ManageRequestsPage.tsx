@@ -8,6 +8,7 @@ import RequestDetailsModal from "../../components/Modals/RequestDetailsModal";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import SectionTitle from "../../components/Cards/SectionTitle";
+import Pagination from "../../components/Pagination/Pagination";
 
 interface Request {
   _id: string;
@@ -35,17 +36,27 @@ interface Request {
 
 function ManageRequestsPage() {
   const [requests, setRequests] = useState<Request[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
   useEffect(() => {
     loadRequests();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize]);
 
   const loadRequests = async () => {
     try {
-      const res = await getAllRequests();
+      setLoading(true);
+
+      const res = await getAllRequests({ page, limit: pageSize });
+
       setRequests(res.requests);
+      setTotal(res.total);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -89,7 +100,7 @@ function ManageRequestsPage() {
 
 };
 
-  if (loading) {
+  if (loading && requests.length === 0) {
     return (
       <div className="text-center py-20 text-xl text-gray-800 dark:text-gray-100">
         Loading requests...
@@ -147,7 +158,20 @@ function ManageRequestsPage() {
 
           <tbody>
 
-            {requests.map((request) => (
+            {requests.length === 0 ? (
+
+              <tr>
+                <td
+                  colSpan={7}
+                  className="text-center py-12 text-gray-500 dark:text-gray-400"
+                >
+                  No requests found.
+                </td>
+              </tr>
+
+            ) : (
+
+              requests.map((request) => (
 
               <tr
                 key={request._id}
@@ -198,11 +222,24 @@ function ManageRequestsPage() {
 
               </tr>
 
-            ))}
+              ))
+
+            )}
 
           </tbody>
 
         </table>
+
+        <Pagination
+          currentPage={page}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
 
        </div>
 

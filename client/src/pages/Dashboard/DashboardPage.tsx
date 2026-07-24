@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 import {
   Heart,
@@ -58,7 +59,6 @@ const AVAILABILITY_STYLES: Record<string, { dot: string; text: string; bg: strin
   },
 };
 
-
 function SectionHeading({
   icon,
   title,
@@ -67,7 +67,7 @@ function SectionHeading({
   title: string;
 }) {
   return (
-    <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+    <h2 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6 flex items-center gap-2">
       <span className="text-red-600">{icon}</span>
       {title}
     </h2>
@@ -122,14 +122,14 @@ function DashboardPage() {
   const hasDonatedBefore = (stats?.myDonations ?? 0) > 0;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 
       {/* ================= HEADER ================= */}
 
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             Welcome back, {stats?.userName}
           </h1>
 
@@ -139,14 +139,13 @@ function DashboardPage() {
 
         </div>
 
-        {/* Compact availability badge, top-right */}
         <div
-          className={`rounded-xl px-4 py-2 text-right ${availabilityInfo.bg}`}
+          className={`rounded-xl px-4 py-2 w-full sm:w-auto text-left sm:text-right ${availabilityInfo.bg}`}
         >
           <p className={`text-sm font-bold ${availabilityInfo.text}`}>
             {availabilityInfo.dot} {stats?.availabilityStatus?.toUpperCase() ?? "--"}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 max-w-[180px]">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 sm:max-w-[180px]">
             {availabilityInfo.label}
           </p>
         </div>
@@ -156,9 +155,9 @@ function DashboardPage() {
       {/* ================= MY IMPACT ================= */}
 
       <div>
-        <h2 className="text-xl font-bold mb-4">My Impact</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-4">My Impact</h2>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
           <StatCard
             title="Donations Made"
@@ -173,15 +172,17 @@ function DashboardPage() {
           />
 
           {hasDonatedBefore && (
-            <StatCard
-              title="Last Donation"
-              value={
-                stats?.lastDonationDate
-                  ? new Date(stats.lastDonationDate).toLocaleDateString()
-                  : "--"
-              }
-              icon={<Clock size={28} />}
-            />
+            <div className="xs:col-span-2 lg:col-span-1">
+              <StatCard
+                title="Last Donation"
+                value={
+                  stats?.lastDonationDate
+                    ? format(new Date(stats.lastDonationDate), "dd MMM yyyy")
+                    : "--"
+                }
+                icon={<Clock size={28} />}
+              />
+            </div>
           )}
 
         </div>
@@ -189,11 +190,9 @@ function DashboardPage() {
 
       {/* ================= MY BLOOD INFO & TOP CITIES ================= */}
 
-      <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
 
-        {/* Blood Information */}
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<Droplets size={20} />} title="My Information" />
 
@@ -213,9 +212,7 @@ function DashboardPage() {
 
         </div>
 
-        {/* Top Active Cities */}
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<Trophy size={20} />} title="Top Active Cities" />
 
@@ -232,7 +229,9 @@ function DashboardPage() {
                     </span>
                     <span className="font-medium">{c.city}</span>
                   </div>
-                  <span className="text-gray-500 dark:text-gray-400">{c.count} donors</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {c.count} {c.count === 1 ? "donor" : "donors"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -248,13 +247,13 @@ function DashboardPage() {
 
       {/* ================= BLOODBRIDGE NETWORK ================= */}
 
-      <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<Users size={20} />} title="BloodBridge Network" />
 
-          <div className="grid grid-cols-2 gap-5 flex-1 content-center">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 flex-1 content-center">
 
             <StatCard
               title="Registered Donors"
@@ -263,19 +262,19 @@ function DashboardPage() {
             />
 
             <StatCard
-              title="Your City"
+              title="Registered In Your City"
               value={stats?.registeredCityDonors ?? 0}
               icon={<MapPin size={26} />}
             />
 
             <StatCard
-              title="Available"
+              title="Available Donors"
               value={stats?.availableDonors ?? 0}
               icon={<Heart size={26} />}
             />
 
             <StatCard
-              title="Available In City"
+              title="Available Donors In Your City"
               value={stats?.availableCityDonors ?? 0}
               icon={<MapPin size={26} />}
             />
@@ -284,7 +283,7 @@ function DashboardPage() {
 
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<BarChart3 size={20} />} title="Overall Statistics" />
 
@@ -318,23 +317,28 @@ function DashboardPage() {
 
       {/* ================= DISTRIBUTION CHARTS ================= */}
 
-      <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<BarChart3 size={20} />} title="Blood Group Distribution" />
 
           {stats?.bloodGroupDistribution?.length ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={stats.bloodGroupDistribution}
                 layout="vertical"
-                margin={{ left: 20 }}
+                margin={{ left: 10, right: 10 }}
               >
                 <XAxis type="number" allowDecimals={false} />
-                <YAxis type="category" dataKey="group" width={60} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#dc2626" radius={[0, 6, 6, 0]} />
+                <YAxis type="category" dataKey="group" width={50} />
+                <Tooltip cursor={false} />
+                <Bar
+                  dataKey="count"
+                  fill="#dc2626"
+                  radius={[0, 6, 6, 0]}
+                  activeBar={{ fill: "#b91c1c" }}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -345,20 +349,20 @@ function DashboardPage() {
 
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8 h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8 h-full flex flex-col">
 
           <SectionHeading icon={<PieChartIcon size={20} />} title="Availability Distribution" />
 
           {stats?.availabilityDistribution?.length ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={stats.availabilityDistribution}
                   dataKey="count"
                   nameKey="status"
-                  innerRadius={70}
-                  outerRadius={105}
-                  paddingAngle={3}
+                  innerRadius={60}
+                  outerRadius={95}
+                  paddingAngle={2}
                 >
                   {stats.availabilityDistribution.map((entry: any) => (
                     <Cell
@@ -383,13 +387,13 @@ function DashboardPage() {
 
       {/* ================= DID YOU KNOW — FACTS & TIPS ================= */}
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-8">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 sm:p-8">
 
         <SectionHeading icon={<Lightbulb size={20} />} title="Awareness Corner" />
 
-        <div className="bg-red-50 dark:bg-red-950 rounded-xl p-6 min-h-[80px] flex items-center">
+        <div className="bg-red-50 dark:bg-red-950 rounded-xl p-5 sm:p-6 min-h-[80px] flex items-center">
           <p
-            className="text-gray-700 dark:text-gray-200 text-base leading-relaxed animate-[fadeIn_0.5s_ease-in-out]"
+            className="text-gray-700 dark:text-gray-200 text-sm sm:text-base leading-relaxed animate-[fadeIn_0.5s_ease-in-out]"
           >
             {fact}
           </p>

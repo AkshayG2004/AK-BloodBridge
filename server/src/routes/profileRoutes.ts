@@ -8,7 +8,6 @@ import {
 import authMiddleware from "../middleware/authMiddleware";
 
 const router = express.Router();
-console.log("Profile Routes Loaded");
 
 // Get Logged-in User Profile
 router.get(
