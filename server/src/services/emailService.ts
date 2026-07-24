@@ -1,26 +1,6 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-
-  logger: true,
-  debug: true,
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP VERIFY ERROR:", error);
-  } else {
-    console.log("SMTP VERIFY SUCCESS");
-  }
-});
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
 export const sendOTPEmail = async (
   email: string,
@@ -32,50 +12,67 @@ export const sendOTPEmail = async (
     console.log("TO:", email);
     console.log("OTP:", otp);
 
-    const info = await transporter.sendMail({
-      from: `"AK BloodBridge" <${process.env.SENDER_EMAIL}>`,
+    const response = await axios.post(
+      BREVO_API_URL,
+      {
+        sender: {
+          name: "AK BloodBridge",
+          email: process.env.SENDER_EMAIL,
+        },
 
-      to: email,
+        to: [
+          {
+            email,
+          },
+        ],
 
-      subject: "BloodBridge Email Verification OTP",
+        subject: "BloodBridge Email Verification OTP",
 
-      html: `
-        <div style="font-family:Arial;padding:20px;">
-          <h2 style="color:#dc2626;">
-            Verify your Email
-          </h2>
+        htmlContent: `
+          <div style="font-family:Arial;padding:20px;">
+            <h2 style="color:#dc2626;">
+              Verify your Email
+            </h2>
 
-          <p>
-            Thank you for registering with
-            <strong>AK BloodBridge</strong>.
-          </p>
+            <p>
+              Thank you for registering with
+              <strong>AK BloodBridge</strong>.
+            </p>
 
-          <p>Your OTP is:</p>
+            <p>Your OTP is:</p>
 
-          <h1 style="letter-spacing:6px;color:#dc2626;">
-            ${otp}
-          </h1>
+            <h1 style="letter-spacing:6px;color:#dc2626;">
+              ${otp}
+            </h1>
 
-          <p>
-            This OTP expires in
-            <strong>5 minutes</strong>.
-          </p>
+            <p>
+              This OTP expires in
+              <strong>5 minutes</strong>.
+            </p>
 
-          <hr>
+            <hr>
 
-          <small>
-            Ignore this email if you didn't request it.
-          </small>
-        </div>
-      `,
-    });
+            <small>
+              Ignore this email if you didn't request it.
+            </small>
+          </div>
+        `,
+      },
+      {
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "api-key": process.env.BREVO_API_KEY!,
+        },
+      }
+    );
 
     console.log("========== EMAIL SENT ==========");
-    console.log(info);
+    console.log(response.data);
 
-  } catch (error) {
-    console.error("========== NODEMAILER ERROR ==========");
-    console.error(error);
+  } catch (error: any) {
+    console.error("========== BREVO EMAIL ERROR ==========");
+    console.error(error.response?.data || error.message);
     throw error;
   }
 };
@@ -88,48 +85,70 @@ export const sendContactEmail = async (
 ) => {
   try {
     console.log("========== CONTACT EMAIL DEBUG ==========");
-    console.log("FROM (user):", email);
     console.log("NAME:", name);
+    console.log("EMAIL:", email);
     console.log("SUBJECT:", subject);
 
-    const info = await transporter.sendMail({
-      from: `"AK BloodBridge Contact" <${process.env.SENDER_EMAIL}>`,
+    const response = await axios.post(
+      BREVO_API_URL,
+      {
+        sender: {
+          name: "AK BloodBridge",
+          email: process.env.SENDER_EMAIL,
+        },
 
-      to: process.env.SENDER_EMAIL, // sends to your own admin inbox
+        to: [
+          {
+            email: process.env.SENDER_EMAIL,
+          },
+        ],
 
-      replyTo: email, // lets you hit "Reply" and respond directly to the user
+        replyTo: {
+          email,
+          name,
+        },
 
-      subject: `[Contact Us] ${subject}`,
+        subject: `[Contact Us] ${subject}`,
 
-      html: `
-        <div style="font-family:Arial;padding:20px;">
-          <h2 style="color:#dc2626;">
-            New Contact Us Message
-          </h2>
+        htmlContent: `
+          <div style="font-family:Arial;padding:20px;">
+            <h2 style="color:#dc2626;">
+              New Contact Us Message
+            </h2>
 
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
 
-          <hr>
+            <hr>
 
-          <p style="white-space:pre-line;">${message}</p>
+            <p style="white-space:pre-line;">
+              ${message}
+            </p>
 
-          <hr>
+            <hr>
 
-          <small>
-            Sent via AK BloodBridge Contact Us form.
-          </small>
-        </div>
-      `,
-    });
+            <small>
+              Sent via AK BloodBridge Contact Us form.
+            </small>
+          </div>
+        `,
+      },
+      {
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "api-key": process.env.BREVO_API_KEY!,
+        },
+      }
+    );
 
     console.log("========== CONTACT EMAIL SENT ==========");
-    console.log(info);
+    console.log(response.data);
 
-  } catch (error) {
-    console.error("========== NODEMAILER ERROR (CONTACT) ==========");
-    console.error(error);
+  } catch (error: any) {
+    console.error("========== BREVO CONTACT ERROR ==========");
+    console.error(error.response?.data || error.message);
     throw error;
   }
 };
